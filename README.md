@@ -1,2 +1,8 @@
 # C-Trivia-Game
-A trivia game based on C#
+A trivia game made in C#
+
+## Project Members:
+- [Cisneros Galeana Sebastian](
+- [Dávalos Rojas Atrishka](
+- [Guerrero Banda Oziel](
+- [Sustaita Cebrian Rafael Alejandro](
