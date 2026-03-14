@@ -1,0 +1,12 @@
+﻿El proposito de la arquitectura MVVM es separar lo logica del diseño.
+Para esto se divide en tres partes:
+- Modelo: La declaracion de las estructuras y la logica.
+- Vista: El diseño de la interfaz de usuario, lo que el usuario ve y con lo que interactua.
+- ViewModel: Lo que conecta el modelo con la vista, interpreta los datos del modelo para mostrarlos en la vista.
+
+Lo ideal es que el modelo nunca tenga codigo relacionado con la vista, y viceversa.
+En el viewmodel se pueden tener comandos que se ejecutan al interactuar con la vista, y estos comandos pueden modificar el modelo o actualizar la vista.
+
+Para la vista, podrian usar el mainWindow.xaml para las declaraciones de los elementos visules, y el app.xaml para el diseño de los elementos visuales.
+
+Asi nos evitamos tener mezclado todo, y como vamos a seguir modificadno el proyecto para los demas parciales mejor ir separendo todo desde el principio.
