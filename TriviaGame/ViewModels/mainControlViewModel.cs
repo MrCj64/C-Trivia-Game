@@ -8,6 +8,10 @@ namespace TriviaGame.ViewModels
     //Esta clase es la que se va a conectar en el mainWindow.xaml.cs
     internal class mainControlViewModel : propertiesChangesViewModel
     {
+        public RelayCommand mainMenuCommand { get; set; }
+        public RelayCommand gameCommand { get; set; }
+        public RelayCommand scoreCommand { get; set; }
+
         private object _currentView;
         public object CurrentView {
             get => _currentView;
@@ -18,12 +22,13 @@ namespace TriviaGame.ViewModels
         }
 
         public mainControlViewModel()
-        { CurrentView = new mainMenuViewModel(); }
+        { 
+            CurrentView = new mainMenuViewModel(); 
 
-        public void changeViewToGame(object view)
-        { CurrentView = new inGameViewModel(); }
+            mainMenuCommand = new RelayCommand(() => CurrentView = new mainMenuViewModel());
+            gameCommand = new RelayCommand(() => CurrentView = new inGameViewModel());
+            scoreCommand = new RelayCommand(() => CurrentView = new finalScoreViewModel());  
+        }
 
-        public void changeViewToScore(object view)
-        { CurrentView = new finalScoreViewModel(); }
     }
 }

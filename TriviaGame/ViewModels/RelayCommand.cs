@@ -8,16 +8,23 @@ namespace TriviaGame.ViewModels
 {
     internal class RelayCommand : ICommand
     {
-        public event EventHandler? CanExecuteChanged;
+        private readonly Action _execute;
+        private readonly Func<bool> _canExecute;
 
-        public bool CanExecute(object? parameter)
+        public RelayCommand(Action execute, Func<bool> canExecute = null)
         {
-            throw new NotImplementedException();
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute;
         }
 
-        public void Execute(object? parameter)
+        public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
+
+        public void Execute(object parameter) => _execute();
+
+        public event EventHandler CanExecuteChanged
         {
-            throw new NotImplementedException();
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
         }
     }
 }
