@@ -8,6 +8,6 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Background="Aquamarine">
     <Grid>
-            
+        <Button Content="Inicar Juego" Command="{Binding DataContext.gameCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="70" Height="50"/>
     </Grid>
 </UserControl>
