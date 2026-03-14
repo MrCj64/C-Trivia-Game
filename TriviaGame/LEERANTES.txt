@@ -7,6 +7,11 @@ Para esto se divide en tres partes:
 Lo ideal es que el modelo nunca tenga codigo relacionado con la vista, y viceversa.
 En el viewmodel se pueden tener comandos que se ejecutan al interactuar con la vista, y estos comandos pueden modificar el modelo o actualizar la vista.
 
-Para la vista, podrian usar el mainWindow.xaml para las declaraciones de los elementos visules, y el app.xaml para el diseño de los elementos visuales.
+Para la vista, cree tres .xaml que estan en la carpeta de views, y el app.xaml ya se encarga de mapear entre los distintos views.
+Entonces, el diseño de cada vista se encuentra en su respectivo .xaml, ya no hay que cambiar ni el app.xaml ni el mainWindow.xaml, solo se modifican los .xaml de cada vista.
+
+En la carpeta de services va la declaracion y las queries a la base de datos.
+En la capreta de models va la logica de las estructuras.
+En la carpeta de viewmodels va la logica de lo que se muestra en cada vista, y los comandos que se ejecutan al interactuar con la vista.
 
 Asi nos evitamos tener mezclado todo, y como vamos a seguir modificadno el proyecto para los demas parciales mejor ir separendo todo desde el principio.
