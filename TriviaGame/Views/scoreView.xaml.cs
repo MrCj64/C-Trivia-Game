@@ -8,6 +8,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace TriviaGame.Views
@@ -15,7 +16,7 @@ namespace TriviaGame.Views
     /// <summary>
     /// Lógica de interacción para scoreView.xaml
     /// </summary>
-    public partial class scoreView : Window
+    public partial class scoreView : UserControl
     {
         public scoreView()
         {
