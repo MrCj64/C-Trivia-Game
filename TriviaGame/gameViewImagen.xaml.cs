@@ -10,16 +10,17 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TriviaGame.Views
+namespace TriviaGame
 {
     /// <summary>
-    /// Lógica de interacción para Window1.xaml
+    /// Lógica de interacción para gameViewImagen.xaml
     /// </summary>
-    public partial class Window1 : Window
+    public partial class gameViewImagen : Page
     {
-        public Window1()
+        public gameViewImagen()
         {
             InitializeComponent();
         }

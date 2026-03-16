@@ -151,7 +151,7 @@
             </Button.Template>
         </Button>
         <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom"
-        RenderTransformOrigin="0.5,1">
+        RenderTransformOrigin="0.5,1" Click="Button_Click_2">
             <Button.Foreground>
                 <ImageBrush/>
             </Button.Foreground>
@@ -207,7 +207,7 @@
             </Button.Template>
         </Button>
         <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
-        RenderTransformOrigin="0.5,1">
+        RenderTransformOrigin="0.5,1" Click="Button_Click_3">
             <Button.Background>
                 <ImageBrush ImageSource="/Views/deporte.png"/>
             </Button.Background>
@@ -257,7 +257,7 @@
             </Button.Template>
         </Button>
         <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
-        RenderTransformOrigin="0.5,1">
+        RenderTransformOrigin="0.5,1" Click="Button_Click_4">
             <Button.Background>
                 <ImageBrush ImageSource="/Views/desplazarse.png"/>
             </Button.Background>
