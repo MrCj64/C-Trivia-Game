@@ -22,5 +22,16 @@ namespace TriviaGame.Views
         {
             InitializeComponent();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            mainMenuView vistaJuego = new mainMenuView();
+
+            Window ventanaPrincipal = Window.GetWindow(this);
+            if (ventanaPrincipal != null)
+            {
+                ventanaPrincipal.Content = vistaJuego;
+            }
+        }
     }
 }

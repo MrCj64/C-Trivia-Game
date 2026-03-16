@@ -15,7 +15,7 @@
         <Button x:Name="BtnArchivo" HorizontalAlignment="Left" Margin="1104,212,0,0" 
         VerticalAlignment="Top" Height="103" Width="138" 
         Background="Transparent" BorderBrush="Transparent"
-        RenderTransformOrigin="0.5,0.5">
+        RenderTransformOrigin="0.5,0.5" Click="BtnArchivo_Click">
             <Button.RenderTransform>
                 <ScaleTransform x:Name="buttonScale" ScaleX="1" ScaleY="1"/>
             </Button.RenderTransform>

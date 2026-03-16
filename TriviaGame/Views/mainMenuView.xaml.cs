@@ -66,5 +66,16 @@ namespace TriviaGame.Views
                 ventanaPrincipal.Content = vistaJuego;
             }
         }
+
+        private void BtnArchivo_Click(object sender, RoutedEventArgs e)
+        {
+            scoreView vistaJuego = new scoreView();
+
+            Window ventanaPrincipal = Window.GetWindow(this);
+            if (ventanaPrincipal != null)
+            {
+                ventanaPrincipal.Content = vistaJuego;
+            }
+        }
     }
 }
