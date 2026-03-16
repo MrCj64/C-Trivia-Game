@@ -2,14 +2,48 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\archivo.png" />
+    <None Remove="Views\asistente-virtual.png" />
+    <None Remove="Views\borrador.png" />
+    <None Remove="Views\cerebro.png" />
+    <None Remove="Views\cine.png" />
+    <None Remove="Views\control.png" />
+    <None Remove="Views\deporte.png" />
+    <None Remove="Views\desplazarse.png" />
+    <None Remove="Views\Fondo.png" />
+    <None Remove="Views\geografia.png" />
+    <None Remove="Views\globo.png" />
+    <None Remove="Views\Musica.png" />
+    <None Remove="Views\nota-musical.png" />
+    <None Remove="Views\puntuacion-mas-alta.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MySql.Data" Version="9.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Views\archivo.png" />
+    <Resource Include="Views\asistente-virtual.png" />
+    <Resource Include="Views\borrador.png" />
+    <Resource Include="Views\cerebro.png" />
+    <Resource Include="Views\cine.png" />
+    <Resource Include="Views\control.png" />
+    <Resource Include="Views\deporte.png" />
+    <Resource Include="Views\desplazarse.png" />
+    <Resource Include="Views\Fondo.png" />
+    <Resource Include="Views\geografia.png" />
+    <Resource Include="Views\globo.png" />
+    <Resource Include="Views\Musica.png" />
+    <Resource Include="Views\nota-musical.png" />
+    <Resource Include="Views\puntuacion-mas-alta.png" />
   </ItemGroup>
 
 </Project>

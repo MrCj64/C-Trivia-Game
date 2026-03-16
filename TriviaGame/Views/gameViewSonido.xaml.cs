@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,24 +16,13 @@ using System.Windows.Shapes;
 namespace TriviaGame.Views
 {
     /// <summary>
-    /// Lógica de interacción para scoreView.xaml
+    /// Lógica de interacción para gameViewSonido.xaml
     /// </summary>
-    public partial class scoreView : UserControl
+    public partial class gameViewSonido : Page
     {
-        public scoreView()
+        public gameViewSonido()
         {
             InitializeComponent();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            mainMenuView vistaJuego = new mainMenuView();
-
-            Window ventanaPrincipal = Window.GetWindow(this);
-            if (ventanaPrincipal != null)
-            {
-                ventanaPrincipal.Content = vistaJuego;
-            }
         }
     }
 }
