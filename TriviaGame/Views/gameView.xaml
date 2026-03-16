@@ -7,7 +7,141 @@
              mc:Ignorable="d" 
              d:DesignHeight="720" d:DesignWidth="1280"
              Background="CadetBlue">
-    <Grid>
-        <Button Content="Ver resultados" Command="{Binding DataContext.scoreCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="70" Height="50" />
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid.Background>
+            <ImageBrush ImageSource="/Views/Fondo.png"/>
+        </Grid.Background>
+        <Border BorderBrush="#FF57248E" BorderThickness="1" Margin="49,40,45,458" CornerRadius="40,40,40,40" Background="#7F57248E">
+            <TextBlock x:Name="TextoPregunta" TextWrapping="Wrap" Margin="47,23,47,23" Width="1090" Height="174" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe UI Variable Display Semibold" FontSize="35"/>
+        </Border>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="1444,231,0,0" VerticalAlignment="Top" Width="0"/>
+        <Button x:Name="BtnA" HorizontalAlignment="Left" Margin="49,299,0,0" VerticalAlignment="Top" 
+        Height="128" Width="562" 
+        Background="#7F7AD8D8" 
+        BorderBrush="#FF7AD8D8"
+        FocusVisualStyle="{x:Null}">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                    BorderBrush="#FF7AD8D9" 
+                    BorderThickness="1" 
+                    CornerRadius="40" 
+                    Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFADFFFF" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+
+            <TextBlock x:Name="TextoA" Text="" 
+               TextWrapping="Wrap" 
+               Margin="31,27,31,28" 
+               Width="498" Height="122" 
+               FontFamily="Segoe UI Variable Display Light" 
+               FontSize="20" 
+               TextAlignment="Center" 
+               VerticalAlignment="Center"
+               Foreground="Black"/>
+        </Button>
+        <Button x:Name="BtnB" HorizontalAlignment="Left" Margin="673,299,0,0" VerticalAlignment="Top" 
+            Height="128" Width="562" 
+            Background="#7FF2D17A" 
+            BorderBrush="#FFF2D17B"
+            FocusVisualStyle="{x:Null}" Foreground="#FFF2D17A">
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" 
+                        BorderBrush="#FFF2D17B" 
+                        BorderThickness="1" 
+                        CornerRadius="40" 
+                        Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFFFE100" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+
+            <TextBlock x:Name="TextoB" Text="" 
+                TextWrapping="Wrap" 
+                Margin="31,27,31,28" 
+                Width="498" Height="122" 
+                FontFamily="Segoe UI Variable Display Light" 
+                FontSize="20" 
+                TextAlignment="Center" 
+                VerticalAlignment="Center"
+                Foreground="Black"/>
+        </Button>
+        <Button x:Name="BtnC" HorizontalAlignment="Left" Margin="49,470,0,0" VerticalAlignment="Top" 
+            Height="128" Width="562" 
+            Background="#7FDE5353" 
+            BorderBrush="#FFDE5353"
+            FocusVisualStyle="{x:Null}" Foreground="#FFDE5353">
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" 
+                        BorderBrush="#FFDE5353" 
+                        BorderThickness="1" 
+                        CornerRadius="40" 
+                        Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFFF8080" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+
+            <TextBlock x:Name="TextoC" Text="" 
+                TextWrapping="Wrap" 
+                Margin="31,27,31,28" 
+                Width="498" Height="122" 
+                FontFamily="Segoe UI Variable Display Light" 
+                FontSize="20" 
+                TextAlignment="Center" 
+                VerticalAlignment="Center"
+                Foreground="Black"/>
+        </Button>
+        <Button x:Name="BtnD" HorizontalAlignment="Left" Margin="673,470,0,0" VerticalAlignment="Top" 
+            Height="128" Width="562" 
+            Background="#7F6CB079" 
+            BorderBrush="#FF6CB079"
+            FocusVisualStyle="{x:Null}" Foreground="#FF6CB079">
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" 
+                        BorderBrush="#FF7AD8D9" 
+                        BorderThickness="1" 
+                        CornerRadius="40" 
+                        Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFB2FF59" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+
+            <TextBlock x:Name="TextoD" Text="" 
+                TextWrapping="Wrap" 
+                Margin="31,27,31,28" 
+                Width="498" Height="122" 
+                FontFamily="Segoe UI Variable Display Light" 
+                FontSize="20" 
+                TextAlignment="Center" 
+                VerticalAlignment="Center"
+                Foreground="Black"/>
+        </Button>
     </Grid>
 </UserControl>
