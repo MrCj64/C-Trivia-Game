@@ -34,13 +34,14 @@ namespace TriviaGame.ViewModels
         }
 
         public mainControlViewModel()
-        { 
-            CurrentView = new loginViewModel(this); 
-
-            mainMenuCommand = new RelayCommand(() => CurrentView = new mainMenuViewModel());
-            gameCommand = new RelayCommand(() => CurrentView = new inGameViewModel());
-            scoreCommand = new RelayCommand(() => CurrentView = new finalScoreViewModel());
-            LoginCommand = new RelayCommand(() => CurrentView = new loginViewModel(this));
+        {
+            _queryService = new queryService();
+            _random = new Random();
+            CurrentView = new loginViewModel(
+                this,
+                startGame: (categoryId) => selectedCategory(categoryId),
+                scoreMenu: () => CurrentView = new finalScoreViewModel()
+            );
 
         }
 

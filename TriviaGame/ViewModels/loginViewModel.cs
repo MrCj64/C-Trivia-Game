@@ -19,6 +19,8 @@ namespace TriviaGame.ViewModels
         private mainControlViewModel mainVM;
         private queryService queryService;
 
+        Action<String> a;
+        Action b;
         public string Username
         {
             get => username;
@@ -39,8 +41,10 @@ namespace TriviaGame.ViewModels
         public ICommand LoginCommand { get; }
         public ICommand InsertaJugador { get; }
 
-        public loginViewModel(mainControlViewModel mainVM)
-        { 
+        public loginViewModel(mainControlViewModel mainVM, Action<String> startGame, Action scoreMenu)
+        {
+            a = startGame;
+            b = scoreMenu;
             this.mainVM = mainVM;
             queryService = new queryService();
 
@@ -56,7 +60,7 @@ namespace TriviaGame.ViewModels
             if (user != false)
             {
                 Message = "Login exitoso";
-                mainVM.CurrentView = new mainMenuViewModel();
+                mainVM.CurrentView = new mainMenuViewModel(a, b);
             }
             else
             {
