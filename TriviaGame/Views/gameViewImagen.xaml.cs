@@ -13,12 +13,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TriviaGame
+namespace TriviaGame.Views
 {
     /// <summary>
     /// Lógica de interacción para gameViewImagen.xaml
     /// </summary>
-    public partial class gameViewImagen : Page
+    public partial class gameViewImagen : UserControl
     {
         public gameViewImagen()
         {

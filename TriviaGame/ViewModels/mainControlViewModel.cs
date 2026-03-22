@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using TriviaGame.Views;
+using System.Linq;
+using TriviaGame.Services;
+using TriviaGame.Models;
 
 namespace TriviaGame.ViewModels
 {
@@ -17,9 +20,14 @@ namespace TriviaGame.ViewModels
 
 
         private object _currentView;
-        public object CurrentView {
+        private queryService _queryService;
+        private Random _random;
+
+        public object CurrentView
+        {
             get => _currentView;
-            set {
+            set
+            {
                 _currentView = value;
                 onPropertyChanged(nameof(CurrentView));
             }
@@ -36,5 +44,41 @@ namespace TriviaGame.ViewModels
 
         }
 
+        public void selectedCategory(string categoryId)
+        {
+            if (!int.TryParse(categoryId, out int idCategoria))
+                return;
+
+            string tipoRespuesta = _queryService.GetTipoPregunta(idCategoria);
+
+            List<Dictionary<string, object>> preguntas = _queryService.GetPreguntas(idCategoria);
+
+            if (preguntas.Count == 0)
+            {
+                return;
+            }
+
+            List<Dictionary<string, object>> preguntasAleatorias = preguntas.OrderBy(x => _random.Next()).ToList();
+
+            foreach (var pregunta in preguntasAleatorias)
+            {
+                int idPregunta = (int)pregunta["idPregunta"];
+                List<Dictionary<string, object>> respuestas = _queryService.GetRespuestas(idPregunta);
+                pregunta["respuestas"] = respuestas.OrderBy(x => _random.Next()).ToList();
+            }
+
+            switch (tipoRespuesta.ToUpper())
+            {
+                case "TEXT":
+                    CurrentView = new textGameViewModel(preguntasAleatorias);
+                    break;
+                case "SOUND":
+                    CurrentView = new audioGameViewModel(preguntasAleatorias);
+                    break;
+                case "IMG":
+                    CurrentView = new ImageGameViewModel(preguntasAleatorias);
+                    break;
+            }
+        }
     }
 }

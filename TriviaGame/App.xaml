@@ -10,8 +10,16 @@
             <views:mainMenuView />
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type viewModels:inGameViewModel}">
+        <DataTemplate DataType="{x:Type viewModels:textGameViewModel}">
             <views:gameView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewModels:ImageGameViewModel}">
+            <views:gameViewImagen />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewModels:audioGameViewModel}">
+            <views:gameViewSonido />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type viewModels:finalScoreViewModel}">
