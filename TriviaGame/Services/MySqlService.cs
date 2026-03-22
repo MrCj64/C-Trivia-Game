@@ -11,9 +11,9 @@ namespace TriviaGame.Services
     internal class MySqlService
     {
         private string myConnectionString = "Server=127.0.0.1;" +
-                                            "Database=TriviaGameBD;" +
+                                            "Database=escolar;" +
                                             "User ID =root;" +
-                                            "Password=root;";
+                                            "Password=2005;";
         MySqlConnection myConnection;
         public MySqlConnection GetConnection()
         {

@@ -82,7 +82,7 @@ namespace TriviaGame.Services
             return listaJugadores;
         }
 
-        public void insertaJugador(string nombreJugador, string password)
+        public bool insertaJugador(string nombreJugador, string password)
         {
             MySqlCommand cmd = new MySqlCommand();
             
@@ -91,6 +91,7 @@ namespace TriviaGame.Services
             cmd.Parameters.AddWithValue("@password", password);
 
             cmd.ExecuteNonQuery();
+            return cmd.ExecuteNonQuery() > 0;
         }
 
         public void insertaPuntuacion(int idJugador, int puntuacion)
@@ -101,6 +102,21 @@ namespace TriviaGame.Services
             cmd.Parameters.AddWithValue("@puntuacion", puntuacion);
 
             cmd.ExecuteNonQuery();
+        }
+
+        public bool LoginJugador(string nombreJugador, string password)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = conn;
+
+            cmd.CommandText = "SELECT COUNT(*) FROM jugadores WHERE nombreJugador=@nombre AND password=@pass";
+
+            cmd.Parameters.AddWithValue("@nombre", nombreJugador);
+            cmd.Parameters.AddWithValue("@pass", password);
+
+            int count = Convert.ToInt32(cmd.ExecuteScalar());
+
+            return count > 0;
         }
     }
 }

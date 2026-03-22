@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TriviaGame.Views;
 
 namespace TriviaGame.ViewModels
 {
@@ -11,6 +12,9 @@ namespace TriviaGame.ViewModels
         public RelayCommand mainMenuCommand { get; set; }
         public RelayCommand gameCommand { get; set; }
         public RelayCommand scoreCommand { get; set; }
+
+        public RelayCommand LoginCommand { get; set; }
+
 
         private object _currentView;
         public object CurrentView {
@@ -23,11 +27,13 @@ namespace TriviaGame.ViewModels
 
         public mainControlViewModel()
         { 
-            CurrentView = new mainMenuViewModel(); 
+            CurrentView = new loginViewModel(this); 
 
             mainMenuCommand = new RelayCommand(() => CurrentView = new mainMenuViewModel());
             gameCommand = new RelayCommand(() => CurrentView = new inGameViewModel());
-            scoreCommand = new RelayCommand(() => CurrentView = new finalScoreViewModel());  
+            scoreCommand = new RelayCommand(() => CurrentView = new finalScoreViewModel());
+            LoginCommand = new RelayCommand(() => CurrentView = new loginViewModel(this));
+
         }
 
     }
