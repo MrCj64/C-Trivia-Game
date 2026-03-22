@@ -22,6 +22,7 @@ namespace TriviaGame.Views
     {
         public loginView()
         {
+            InitializeComponent();
         }
     }
 }
