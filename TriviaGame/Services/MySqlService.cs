@@ -10,7 +10,7 @@ namespace TriviaGame.Services
     internal class MySqlService
     {
         private string myConnectionString = "Server=127.0.0.1;" +
-                                            "Database=TriviaGameBD;" +
+                                            "Database=trivia;" +
                                             "User ID =root;" +
                                             "Password=123;";
         MySqlConnection myConnection;

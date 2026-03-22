@@ -52,10 +52,10 @@ namespace TriviaGame.Services
                 {
                     { "idRespuesta",            reader.GetInt32("idRespuesta"   )},
                     { "idPregunta",             reader.GetInt32("idPregunta"    )},
-                    { "textRespuesta",          reader.GetString("textRespuesta")},
+                    { "textRespuesta",          reader.IsDBNull(reader.GetOrdinal("textRespuesta")) ? null : reader.GetString("textRespuesta")},
                     { "EsCorrecta",             reader.GetBoolean("EsCorrecta"  )},
-                    { "tipoRespuesta",          reader.GetString("tipoRespuesta")},
-                    { "rutaRespuesta",          reader.GetString("rutaRespuesta")},
+                    { "tipoRespuesta",          reader.IsDBNull(reader.GetOrdinal("tipoRespuesta")) ? null : reader.GetString("tipoRespuesta")},
+                    { "rutaRespuesta",          reader.IsDBNull(reader.GetOrdinal("rutaRespuesta")) ? null : reader.GetString("rutaRespuesta")},
                 };
                 listaRespuestas.Add(respuesta);
             }
@@ -77,14 +77,14 @@ namespace TriviaGame.Services
         public List<Dictionary<string, object>> GetJugadores()
         {
             List<Dictionary<string, object>> listaJugadores = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM respuesta", conn);
+            MySqlCommand cmd = new MySqlCommand("SELECT * FROM jugadores", conn);
             MySqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 Dictionary<string, object> jugadores = new Dictionary<string, object>
                 {
                     { "idJugador",                reader.GetInt32("idJugador"        )},
-                    { "nombreJugador",            reader.GetInt32("nombreJugador"    )},
+                    { "nombreJugador",            reader.GetString("nombreJugador"    )},
                     { "password",                 reader.GetString("password"        )}
                 };
 
@@ -96,22 +96,17 @@ namespace TriviaGame.Services
 
         public void insertaJugador(string nombreJugador, string password)
         {
-            MySqlCommand cmd = new MySqlCommand();
-            
-            cmd.CommandText = "INSERT INTO jugadores (idJugador, NombreJugador, password) VALUES ('{@nuevoId, @nombreJugador, @password}')";
-            cmd.Parameters.AddWithValue("@nombre", nombreJugador);
+            MySqlCommand cmd = new MySqlCommand("INSERT INTO jugadores (nombreJugador, password) VALUES (@nombreJugador, @password)", conn);
+            cmd.Parameters.AddWithValue("@nombreJugador", nombreJugador);
             cmd.Parameters.AddWithValue("@password", password);
-
             cmd.ExecuteNonQuery();
         }
 
         public void insertaPuntuacion(int idJugador, int puntuacion)
         {
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.CommandText = "INSERT INTO jugador (idJugador, puntuacionTotal) VALUES (@id, @puntuacion) ON DUPLICATE KEY puntuacionTotal = puntuacionTotal + @puntuacion";
+            MySqlCommand cmd = new MySqlCommand("INSERT INTO jugador (idJugador, puntuacionTotal) VALUES (@id, @puntuacion) ON DUPLICATE KEY UPDATE puntuacionTotal = puntuacionTotal + @puntuacion", conn);
             cmd.Parameters.AddWithValue("@id", idJugador);
             cmd.Parameters.AddWithValue("@puntuacion", puntuacion);
-
             cmd.ExecuteNonQuery();
         }
     }
