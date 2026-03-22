@@ -1,7 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
+using TriviaGame.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace TriviaGame.Services
 {
@@ -17,36 +19,36 @@ namespace TriviaGame.Services
             conn.Open();
         }
 
-        public List<Dictionary<string, object>> GetPreguntas()
+        public List<Dictionary<string, object>> GetPreguntas(int idCategoria)
         {
-            List<Dictionary<string,object>> listaPreguntas = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM pregunta", conn);
+            List<Dictionary<string, object>> listaPreguntas = new List<Dictionary<string, object>>();
+            MySqlCommand cmd = new MySqlCommand("SELECT * FROM pregunta WHERE idCategoria = @idCategoria", conn);
+            cmd.Parameters.AddWithValue("@idCategoria", idCategoria);
             MySqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                Dictionary <string, object> preguntas = new Dictionary<string, object>
+                Dictionary<string, object> pregunta = new Dictionary<string, object>
                 {
                     { "idPregunta",             reader.GetInt32("idPregunta"        )},
                     { "puntuacionPregunta",     reader.GetInt32("puntuacionPregunta")},
                     { "nomPregunta",            reader.GetString("nomPregunta"      )},
                     { "idCategoria",            reader.GetInt32("idCategoria"       )}
                 };
-
-            listaPreguntas.Add(preguntas);
-          
+                listaPreguntas.Add(pregunta);
             }
             reader.Close();
             return listaPreguntas;
         }
 
-        public List<Dictionary<string, object>> GetRespuestas()
+        public List<Dictionary<string, object>> GetRespuestas(int idPregunta)
         {
-            List<Dictionary<string, object>> ListaRespuestas = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM respuesta", conn);
+            List<Dictionary<string, object>> listaRespuestas = new List<Dictionary<string, object>>();
+            MySqlCommand cmd = new MySqlCommand("SELECT * FROM respuesta WHERE idPregunta = @idPregunta", conn);
+            cmd.Parameters.AddWithValue("@idPregunta", idPregunta);
             MySqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                Dictionary<string, object> respuestas = new Dictionary<string, object>
+                Dictionary<string, object> respuesta = new Dictionary<string, object>
                 {
                     { "idRespuesta",            reader.GetInt32("idRespuesta"   )},
                     { "idPregunta",             reader.GetInt32("idPregunta"    )},
@@ -55,11 +57,21 @@ namespace TriviaGame.Services
                     { "tipoRespuesta",          reader.GetString("tipoRespuesta")},
                     { "rutaRespuesta",          reader.GetString("rutaRespuesta")},
                 };
-
-                ListaRespuestas.Add(respuestas);
+                listaRespuestas.Add(respuesta);
             }
             reader.Close();
-            return ListaRespuestas;
+            return listaRespuestas;
+        }
+
+        public string GetTipoPregunta(int idCategoria)
+        {
+            MySqlCommand cmd = new MySqlCommand(
+                "SELECT DISTINCT tipoRespuesta FROM respuesta r " +
+                "INNER JOIN pregunta p ON r.idPregunta = p.idPregunta " +
+                "WHERE p.idCategoria = @idCategoria LIMIT 1", conn);
+            cmd.Parameters.AddWithValue("@idCategoria", idCategoria);
+            object result = cmd.ExecuteScalar();
+            return result != null ? result.ToString() : "TEXT";
         }
 
         public List<Dictionary<string, object>> GetJugadores()
