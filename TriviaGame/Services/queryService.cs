@@ -84,14 +84,27 @@ namespace TriviaGame.Services
 
         public bool insertaJugador(string nombreJugador, string password)
         {
-            MySqlCommand cmd = new MySqlCommand();
-            
-            cmd.CommandText = "INSERT INTO jugadores (idJugador, NombreJugador, password) VALUES ('{@nuevoId, @nombreJugador, @password}')";
-            cmd.Parameters.AddWithValue("@nombre", nombreJugador);
+            string checkSql = "SELECT COUNT(*) FROM jugador WHERE NombreJugador = @nombreJugador";
+            MySqlCommand checkCmd = new MySqlCommand(checkSql, conn);
+            checkCmd.Parameters.AddWithValue("@nombreJugador", nombreJugador);
+            long existe = (long)checkCmd.ExecuteScalar();
+
+            if (existe > 0)
+                return false;
+
+            string insertSql = @"INSERT INTO jugador (idJugador, nombreJugador, puntuacionTotal, password)
+                                  VALUES (
+                                    (SELECT IFNULL(MAX(j.idJugador), 0) + 1 FROM jugador j),
+                                    @nombreJugador,
+                                    '0',
+                                    @password
+                                  )";
+            MySqlCommand cmd = new MySqlCommand(insertSql, conn);
+            cmd.Parameters.AddWithValue("@nombreJugador", nombreJugador);
             cmd.Parameters.AddWithValue("@password", password);
 
-            cmd.ExecuteNonQuery();
-            return cmd.ExecuteNonQuery() > 0;
+            int filas = cmd.ExecuteNonQuery();
+            return filas > 0;
         }
 
         public void insertaPuntuacion(int idJugador, int puntuacion)
@@ -109,7 +122,7 @@ namespace TriviaGame.Services
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = conn;
 
-            cmd.CommandText = "SELECT COUNT(*) FROM jugadores WHERE nombreJugador=@nombre AND password=@pass";
+            cmd.CommandText = "SELECT COUNT(*) FROM jugador WHERE nombreJugador=@nombre AND password=@pass";
 
             cmd.Parameters.AddWithValue("@nombre", nombreJugador);
             cmd.Parameters.AddWithValue("@pass", password);

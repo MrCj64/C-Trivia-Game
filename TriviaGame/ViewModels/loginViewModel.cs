@@ -51,9 +51,9 @@ namespace TriviaGame.ViewModels
         public void Login()
         {
 
-            var user = queryService.LoginJugador(username, password);
+            bool user = queryService.LoginJugador(username, password);
 
-            if (user != null)
+            if (user != false)
             {
                 Message = "Login exitoso";
                 mainVM.CurrentView = new mainMenuViewModel();
@@ -70,7 +70,8 @@ namespace TriviaGame.ViewModels
             bool success = queryService.insertaJugador(Username, password);
 
             if (success)
-                Message = "Usuario registrado";
+                Message = "Usuario registrado exitosamente";
+
             else
                 Message = "Error al registrar";
         }
