@@ -23,7 +23,7 @@ namespace TriviaGame.Views
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        /*private void Button_Click(object sender, RoutedEventArgs e)
         {
 
         }
@@ -76,6 +76,6 @@ namespace TriviaGame.Views
             {
                 ventanaPrincipal.Content = vistaJuego;
             }
-        }
+        }*/
     }
 }

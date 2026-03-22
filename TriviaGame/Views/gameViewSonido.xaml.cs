@@ -18,7 +18,7 @@ namespace TriviaGame.Views
     /// <summary>
     /// Lógica de interacción para gameViewSonido.xaml
     /// </summary>
-    public partial class gameViewSonido : Page
+    public partial class gameViewSonido : UserControl
     {
         public gameViewSonido()
         {

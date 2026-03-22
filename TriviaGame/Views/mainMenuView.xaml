@@ -5,17 +5,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TriviaGame.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="720" d:DesignWidth="1280"
-             Background="Aquamarine">
+             d:DesignHeight="720" d:DesignWidth="1280">
     <Grid RenderTransformOrigin="0.502,0.514">
         <Grid.Background>
             <ImageBrush ImageSource="/Views/Fondo.png"/>
         </Grid.Background>
         <Label Content="Trivia Game" HorizontalAlignment="Center" Margin="0,9,0,0" VerticalAlignment="Top" Height="126" Width="540" FontFamily="Bauhaus 93" FontSize="100" Foreground="Black"/>
-        <Button x:Name="BtnArchivo" HorizontalAlignment="Left" Margin="1104,212,0,0" 
+        
+        <Button x:Name="BtnArchivo" Command="{Binding scoreMenuCommand}" HorizontalAlignment="Left" Margin="1106,257,0,0" 
         VerticalAlignment="Top" Height="103" Width="138" 
         Background="Transparent" BorderBrush="Transparent"
-        RenderTransformOrigin="0.5,0.5" Click="BtnArchivo_Click">
+        RenderTransformOrigin="0.5,0.5">
             <Button.RenderTransform>
                 <ScaleTransform x:Name="buttonScale" ScaleX="1" ScaleY="1"/>
             </Button.RenderTransform>
@@ -54,49 +54,9 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button x:Name="BtnBorrar" HorizontalAlignment="Left" Margin="1124,346,0,0" 
-        VerticalAlignment="Top" Height="80" Width="98" 
-        Background="Transparent" BorderBrush="Transparent"
-        RenderTransformOrigin="0.434,1.525">
-            <Button.RenderTransform>
-                <ScaleTransform x:Name="buttonScaleBorrar" ScaleX="1" ScaleY="1"/>
-            </Button.RenderTransform>
 
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Grid Background="Transparent">
-                        <Image Source="/Views/borrador.png" Stretch="Uniform"/>
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Grid>
-
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
-                                                 To="1.2" Duration="0:0:0.2"/>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
-                                                 To="1.2" Duration="0:0:0.2"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
-                                                 To="1.0" Duration="0:0:0.2"/>
-                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
-                                                 To="1.0" Duration="0:0:0.2"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
-        <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
+        <Button Command="{Binding startGameCommand}" Tag="5" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
+        Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.Background>
                 <ImageBrush ImageSource="/Views/globo.png"/>
@@ -150,8 +110,10 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom"
-        RenderTransformOrigin="0.5,1" Click="Button_Click_2">
+
+        <Button Command="{Binding startGameCommand}" Tag="2" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
+        Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+        RenderTransformOrigin="0.5,1">
             <Button.Foreground>
                 <ImageBrush/>
             </Button.Foreground>
@@ -206,8 +168,10 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
-        RenderTransformOrigin="0.5,1" Click="Button_Click_3">
+
+        <Button Command="{Binding startGameCommand}" Tag="3" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
+        Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
+        RenderTransformOrigin="0.5,1">
             <Button.Background>
                 <ImageBrush ImageSource="/Views/deporte.png"/>
             </Button.Background>
@@ -256,8 +220,10 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
-        RenderTransformOrigin="0.5,1" Click="Button_Click_4">
+
+        <Button Command="{Binding startGameCommand}" Tag="4" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
+        Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
+        RenderTransformOrigin="0.5,1">
             <Button.Background>
                 <ImageBrush ImageSource="/Views/desplazarse.png"/>
             </Button.Background>
@@ -306,7 +272,9 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+
+        <Button Command="{Binding startGameCommand}" Tag="7" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
+        Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom"
         Background="Transparent" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.RenderTransform>
@@ -358,7 +326,9 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
+
+        <Button Command="{Binding startGameCommand}" Tag="6" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
+                Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.Background>
                 <ImageBrush ImageSource="/Views/control.png"/>
@@ -408,7 +378,9 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+
+        <Button Command="{Binding startGameCommand}" Tag="8" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
+                Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom"
         Background="Transparent" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.RenderTransform>
@@ -460,7 +432,5 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-
-
     </Grid>
 </UserControl>
