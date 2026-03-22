@@ -6,5 +6,6 @@ namespace TriviaGame.Models
 {
     internal class imageQuestionModel : questionModel
     {
+        public string pathImage { get; set; }
     }
 }

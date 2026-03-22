@@ -7,6 +7,19 @@ namespace TriviaGame.ViewModels
     //Clase para mostrar la logica del menu de inicio
     internal class mainMenuViewModel : propertiesChangesViewModel
     {
+        public RelayCommand startGameCommand { get; set; }
+        public RelayCommand scoreMenuCommand { get; set; }
+
+        public mainMenuViewModel(Action<String> startGame, Action scoreMenu)
+        {
+            startGameCommand = new RelayCommand((obj) =>
+            {
+                string category = obj as string;
+                startGame(category);
+            });
+
+            scoreMenuCommand = new RelayCommand(scoreMenu);
+        }
 
     }
 }
