@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using TriviaGame.Services;
+using TriviaGame.Models;
 
 namespace TriviaGame.ViewModels
 {
@@ -9,6 +12,9 @@ namespace TriviaGame.ViewModels
     internal class mainControlViewModel : propertiesChangesViewModel
     {
         private object _currentView;
+        private queryService _queryService;
+        private Random _random;
+
         public object CurrentView
         {
             get => _currentView;
@@ -21,15 +27,49 @@ namespace TriviaGame.ViewModels
 
         public mainControlViewModel()
         {
+            _queryService = new queryService();
+            _random = new Random();
             CurrentView = new mainMenuViewModel(
-                startGame: (category) => selectedCategory(category),
+                startGame: (categoryId) => selectedCategory(categoryId),
                 scoreMenu: () => CurrentView = new finalScoreViewModel()
             );
         }
 
-        public void selectedCategory(string category)
+        public void selectedCategory(string categoryId)
         {
-            
+            if (!int.TryParse(categoryId, out int idCategoria))
+                return;
+
+            string tipoRespuesta = _queryService.GetTipoPregunta(idCategoria);
+
+            List<Dictionary<string, object>> preguntas = _queryService.GetPreguntas(idCategoria);
+
+            if (preguntas.Count == 0)
+            {
+                return;
+            }
+
+            List<Dictionary<string, object>> preguntasAleatorias = preguntas.OrderBy(x => _random.Next()).ToList();
+
+            foreach (var pregunta in preguntasAleatorias)
+            {
+                int idPregunta = (int)pregunta["idPregunta"];
+                List<Dictionary<string, object>> respuestas = _queryService.GetRespuestas(idPregunta);
+                pregunta["respuestas"] = respuestas.OrderBy(x => _random.Next()).ToList();
+            }
+
+            switch (tipoRespuesta.ToUpper())
+            {
+                case "TEXT":
+                    CurrentView = new textGameViewModel(preguntasAleatorias);
+                    break;
+                case "SOUND":
+                    CurrentView = new audioGameViewModel(preguntasAleatorias);
+                    break;
+                case "IMG":
+                    CurrentView = new ImageGameViewModel(preguntasAleatorias);
+                    break;
+            }
         }
     }
 }

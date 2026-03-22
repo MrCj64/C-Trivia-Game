@@ -7,13 +7,12 @@ using Mysqlx.Cursor;
 namespace TriviaGame.Services
 {
     //Clase para declarar unicamente la estrucura del servicio de mysql
-
     internal class MySqlService
     {
         private string myConnectionString = "Server=127.0.0.1;" +
-                                            "Database=TriviaGameBD;" +
+                                            "Database=trivia;" +
                                             "User ID =root;" +
-                                            "Password=root;";
+                                            "Password=123;";
         MySqlConnection myConnection;
         public MySqlConnection GetConnection()
         {

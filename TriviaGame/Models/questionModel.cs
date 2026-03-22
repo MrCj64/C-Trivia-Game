@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TriviaGame.Models
 {
     internal abstract class questionModel
     {
-        public List<string> questions = new List<string>();
-        public List<string> answers = new List<string>();
-        public string category { get; set; }
-        public string question { get; set; }
-        public string answer { get; set; }
-        public bool correctAnswer { get; set; }
+        public int Id { get; set; }
         public int categoryId { get; set; }
-        public int questionId { get; set; }
-        public int answerId { get; set; }
-
-        
+        public int points { get; set; }
+        public string question { get; set; }
+        public string category { get; set; }
+        public List<answerModel> answers { get; set; } = new List<answerModel>();
     }
 }

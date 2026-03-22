@@ -6,5 +6,6 @@ namespace TriviaGame.Models
 {
     internal class audioQuestionModel : questionModel
     {
+        public string pathAudio { get; set; }
     }
 }
