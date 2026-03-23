@@ -26,5 +26,8 @@
             <views:scoreView />
         </DataTemplate>
         
+        <DataTemplate DataType="{x:Type viewModels:loginViewModel}">
+            <views:loginView />
+        </DataTemplate>
     </Application.Resources>
 </Application>
