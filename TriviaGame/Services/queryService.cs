@@ -130,5 +130,14 @@ namespace TriviaGame.Services
 
             return count > 0;
         }
+        public string GetNombreCategoria(int idCategoria)
+        {
+            MySqlCommand cmd = new MySqlCommand(
+                "SELECT NombreCategoria FROM categoria WHERE idCategoria = @id", conn);
+            cmd.Parameters.AddWithValue("@id", idCategoria);
+            object result = cmd.ExecuteScalar();
+            return result != null ? result.ToString() : $"Categoría {idCategoria}";
+        }
+
     }
 }

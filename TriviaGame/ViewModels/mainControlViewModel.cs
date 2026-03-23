@@ -12,45 +12,54 @@ namespace TriviaGame.ViewModels
     //Esta clase es la que se va a conectar en el mainWindow.xaml.cs
     public class mainControlViewModel : propertiesChangesViewModel
     {
-        private object _currentView;
-        private queryService _queryService;
-        private Random _random;
+        private object currentView;
+        private queryService queryService;
+        private Random random;
+
+        private int aciertosTotal = 0;
+        private int erroresTotal = 0;
+        private string categoriaActual = "";
+
 
         public object CurrentView
         {
-            get => _currentView;
+            get => currentView;
             set
             {
-                _currentView = value;
+                currentView = value;
                 onPropertyChanged(nameof(CurrentView));
             }
         }
 
         public mainControlViewModel()
         {
-            _queryService = new queryService();
-            _random = new Random();
+            queryService = new queryService();
+            random = new Random();
             CurrentView = new loginViewModel(
                 this,
                 startGame: (categoryId) => selectedCategory(categoryId),
-                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
+                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu, categoriaActual, aciertosTotal, erroresTotal)
             );
 
         }
 
         public void selectedCategory(string categoryId)
         {
+            aciertosTotal = 0;
+            erroresTotal = 0;
+
             if (!int.TryParse(categoryId, out int idCategoria)) return;
 
-            var preguntas = _queryService.GetPreguntas(idCategoria);
+            categoriaActual = queryService.GetNombreCategoria(idCategoria);
+            var preguntas = queryService.GetPreguntas(idCategoria);
             if (preguntas.Count == 0) return;
 
-            var preguntasAleatorias = preguntas.OrderBy(x => _random.Next()).ToList();
+            var preguntasAleatorias = preguntas.OrderBy(x => random.Next()).ToList();
             foreach (var pregunta in preguntasAleatorias)
             {
                 int idPregunta = (int)pregunta["idPregunta"];
-                var respuestas = _queryService.GetRespuestas(idPregunta);
-                pregunta["respuestas"] = respuestas.OrderBy(x => _random.Next()).ToList();
+                var respuestas = queryService.GetRespuestas(idPregunta);
+                pregunta["respuestas"] = respuestas.OrderBy(x => random.Next()).ToList();
             }
 
             MostrarPregunta(preguntasAleatorias, 0);
@@ -60,7 +69,7 @@ namespace TriviaGame.ViewModels
         {
             if (index >= preguntas.Count)
             {
-                CurrentView = new finalScoreViewModel(IrAMenu);
+                CurrentView = new finalScoreViewModel(IrAMenu, categoriaActual, aciertosTotal, erroresTotal);
                 return;
             }
 
@@ -69,8 +78,16 @@ namespace TriviaGame.ViewModels
                 ? respuestas[0]["tipoRespuesta"]?.ToString() ?? "TEXT"
                 : "TEXT";
 
-            // Callback para avanzar a la siguiente pregunta
-            Action siguiente = () => MostrarPregunta(preguntas, index + 1);
+            Action siguiente = () =>
+            {
+                switch (CurrentView)
+                {
+                    case textGameViewModel vm: aciertosTotal += vm.Aciertos; erroresTotal += vm.Errores; break;
+                    case audioGameViewModel vm: aciertosTotal += vm.Aciertos; erroresTotal += vm.Errores; break;
+                    case ImageGameViewModel vm: aciertosTotal += vm.Aciertos; erroresTotal += vm.Errores; break;
+                }
+                MostrarPregunta(preguntas, index + 1);
+            };
 
             switch (tipo.ToUpper())
             {
@@ -96,7 +113,7 @@ namespace TriviaGame.ViewModels
         {
             CurrentView = new mainMenuViewModel(
                 startGame: (categoryId) => selectedCategory(categoryId),
-                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
+                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu, categoriaActual, aciertosTotal, erroresTotal)
             );
         }
     }

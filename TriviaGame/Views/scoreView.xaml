@@ -66,10 +66,10 @@
         <Rectangle HorizontalAlignment="Left" Height="399" Margin="78,228,0,0" Stroke="Black" VerticalAlignment="Top" Width="282"/>
         <Rectangle HorizontalAlignment="Left" Height="399" Margin="359,228,0,0" Stroke="Black" VerticalAlignment="Top" Width="282"/>
         <Rectangle HorizontalAlignment="Left" Height="399" Margin="639,228,0,0" Stroke="Black" VerticalAlignment="Top" Width="282"/>
-        <TextBlock x:Name="LabelCategoria" HorizontalAlignment="Left" Margin="106,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
-        <TextBlock x:Name="LabelAciertos" HorizontalAlignment="Left" Margin="383,248,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
-        <TextBlock x:Name="LabelErrores" HorizontalAlignment="Left" Margin="664,248,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
-        <TextBlock x:Name="LabelPuntuacion" HorizontalAlignment="Left" Margin="946,248,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
+        <TextBlock Text="{Binding Categoria}" HorizontalAlignment="Left" Margin="106,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
+        <TextBlock Text="{Binding Aciertos}" HorizontalAlignment="Left" Margin="383,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
+        <TextBlock Text="{Binding Errores}" HorizontalAlignment="Left" Margin="664,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
+        <TextBlock Text="{Binding Puntuacion}" HorizontalAlignment="Left" Margin="946,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
         
     </Grid>
 </UserControl>
