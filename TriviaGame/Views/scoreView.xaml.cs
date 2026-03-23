@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TriviaGame.ViewModels;
 
 namespace TriviaGame.Views
 {
@@ -25,12 +26,15 @@ namespace TriviaGame.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            mainMenuView vistaJuego = new mainMenuView();
+           
+        }
 
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
             Window ventanaPrincipal = Window.GetWindow(this);
-            if (ventanaPrincipal != null)
+            if (ventanaPrincipal?.DataContext is mainControlViewModel vm)
             {
-                ventanaPrincipal.Content = vistaJuego;
+                vm.IrAMenu();
             }
         }
     }

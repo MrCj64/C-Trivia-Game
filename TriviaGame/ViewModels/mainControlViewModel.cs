@@ -80,6 +80,14 @@ namespace TriviaGame.ViewModels
                     CurrentView = new ImageGameViewModel(preguntasAleatorias);
                     break;
             }
+
+        }
+        public void IrAMenu()
+        {
+            CurrentView = new mainMenuViewModel(
+                startGame: (categoryId) => selectedCategory(categoryId),
+                scoreMenu: () => CurrentView = new finalScoreViewModel()
+            );
         }
     }
 }
