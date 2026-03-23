@@ -94,12 +94,29 @@ namespace TriviaGame.Services
             return listaJugadores;
         }
 
-        public void insertaJugador(string nombreJugador, string password)
+        public bool insertaJugador(string nombreJugador, string password)
         {
-            MySqlCommand cmd = new MySqlCommand("INSERT INTO jugadores (nombreJugador, password) VALUES (@nombreJugador, @password)", conn);
+            string checkSql = "SELECT COUNT(*) FROM jugador WHERE NombreJugador = @nombreJugador";
+            MySqlCommand checkCmd = new MySqlCommand(checkSql, conn);
+            checkCmd.Parameters.AddWithValue("@nombreJugador", nombreJugador);
+            long existe = (long)checkCmd.ExecuteScalar();
+
+            if (existe > 0)
+                return false;
+
+            string insertSql = @"INSERT INTO jugador (idJugador, nombreJugador, puntuacionTotal, password)
+                                  VALUES (
+                                    (SELECT IFNULL(MAX(j.idJugador), 0) + 1 FROM jugador j),
+                                    @nombreJugador,
+                                    '0',
+                                    @password
+                                  )";
+            MySqlCommand cmd = new MySqlCommand(insertSql, conn);
             cmd.Parameters.AddWithValue("@nombreJugador", nombreJugador);
             cmd.Parameters.AddWithValue("@password", password);
-            cmd.ExecuteNonQuery();
+
+            int filas = cmd.ExecuteNonQuery();
+            return filas > 0;
         }
 
         public void insertaPuntuacion(int idJugador, int puntuacion)
@@ -108,6 +125,21 @@ namespace TriviaGame.Services
             cmd.Parameters.AddWithValue("@id", idJugador);
             cmd.Parameters.AddWithValue("@puntuacion", puntuacion);
             cmd.ExecuteNonQuery();
+        }
+
+        public bool LoginJugador(string nombreJugador, string password)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = conn;
+
+            cmd.CommandText = "SELECT COUNT(*) FROM jugador WHERE nombreJugador=@nombre AND password=@pass";
+
+            cmd.Parameters.AddWithValue("@nombre", nombreJugador);
+            cmd.Parameters.AddWithValue("@pass", password);
+
+            int count = Convert.ToInt32(cmd.ExecuteScalar());
+
+            return count > 0;
         }
     }
 }
