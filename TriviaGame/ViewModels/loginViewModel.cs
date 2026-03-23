@@ -10,7 +10,7 @@ using TriviaGame.Views;
 
 namespace TriviaGame.ViewModels
 {
-    internal class loginViewModel : propertiesChangesViewModel
+    public class loginViewModel : propertiesChangesViewModel
     {
         private string username;
         private string message;

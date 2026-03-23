@@ -10,15 +10,8 @@ namespace TriviaGame.ViewModels
 {
     //Clase para manejar la vista de las diferentes pantallas (menu, juego, score)
     //Esta clase es la que se va a conectar en el mainWindow.xaml.cs
-    internal class mainControlViewModel : propertiesChangesViewModel
+    public class mainControlViewModel : propertiesChangesViewModel
     {
-        public RelayCommand mainMenuCommand { get; set; }
-        public RelayCommand gameCommand { get; set; }
-        public RelayCommand scoreCommand { get; set; }
-
-        public RelayCommand LoginCommand { get; set; }
-
-
         private object _currentView;
         private queryService _queryService;
         private Random _random;
@@ -40,53 +33,70 @@ namespace TriviaGame.ViewModels
             CurrentView = new loginViewModel(
                 this,
                 startGame: (categoryId) => selectedCategory(categoryId),
-                scoreMenu: () => CurrentView = new finalScoreViewModel()
+                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
             );
 
         }
 
         public void selectedCategory(string categoryId)
         {
-            if (!int.TryParse(categoryId, out int idCategoria))
-                return;
+            if (!int.TryParse(categoryId, out int idCategoria)) return;
 
-            string tipoRespuesta = _queryService.GetTipoPregunta(idCategoria);
+            var preguntas = _queryService.GetPreguntas(idCategoria);
+            if (preguntas.Count == 0) return;
 
-            List<Dictionary<string, object>> preguntas = _queryService.GetPreguntas(idCategoria);
-
-            if (preguntas.Count == 0)
-            {
-                return;
-            }
-
-            List<Dictionary<string, object>> preguntasAleatorias = preguntas.OrderBy(x => _random.Next()).ToList();
-
+            var preguntasAleatorias = preguntas.OrderBy(x => _random.Next()).ToList();
             foreach (var pregunta in preguntasAleatorias)
             {
                 int idPregunta = (int)pregunta["idPregunta"];
-                List<Dictionary<string, object>> respuestas = _queryService.GetRespuestas(idPregunta);
+                var respuestas = _queryService.GetRespuestas(idPregunta);
                 pregunta["respuestas"] = respuestas.OrderBy(x => _random.Next()).ToList();
             }
 
-            switch (tipoRespuesta.ToUpper())
+            MostrarPregunta(preguntasAleatorias, 0);
+        }
+
+        private void MostrarPregunta(List<Dictionary<string, object>> preguntas, int index)
+        {
+            if (index >= preguntas.Count)
             {
-                case "TEXT":
-                    CurrentView = new textGameViewModel(preguntasAleatorias);
-                    break;
-                case "SOUND":
-                    CurrentView = new audioGameViewModel(preguntasAleatorias);
-                    break;
-                case "IMG":
-                    CurrentView = new ImageGameViewModel(preguntasAleatorias);
-                    break;
+                CurrentView = new finalScoreViewModel(IrAMenu);
+                return;
             }
 
+            var respuestas = (List<Dictionary<string, object>>)preguntas[index]["respuestas"];
+            string tipo = respuestas.Count > 0
+                ? respuestas[0]["tipoRespuesta"]?.ToString() ?? "TEXT"
+                : "TEXT";
+
+            // Callback para avanzar a la siguiente pregunta
+            Action siguiente = () => MostrarPregunta(preguntas, index + 1);
+
+            switch (tipo.ToUpper())
+            {
+                case "TEXT":
+                    CurrentView = new textGameViewModel(
+                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
+                    break;
+                case "SOUND":
+                    CurrentView = new audioGameViewModel(
+                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
+                    break;
+                case "IMG":
+                    CurrentView = new ImageGameViewModel(
+                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
+                    break;
+                default:
+                    CurrentView = new textGameViewModel(
+                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
+                    break;
+            }
         }
         public void IrAMenu()
         {
             CurrentView = new mainMenuViewModel(
                 startGame: (categoryId) => selectedCategory(categoryId),
-                scoreMenu: () => CurrentView = new finalScoreViewModel()
+                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
             );
         }
     }

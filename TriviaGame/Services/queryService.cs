@@ -63,17 +63,6 @@ namespace TriviaGame.Services
             return listaRespuestas;
         }
 
-        public string GetTipoPregunta(int idCategoria)
-        {
-            MySqlCommand cmd = new MySqlCommand(
-                "SELECT DISTINCT tipoRespuesta FROM respuesta r " +
-                "INNER JOIN pregunta p ON r.idPregunta = p.idPregunta " +
-                "WHERE p.idCategoria = @idCategoria LIMIT 1", conn);
-            cmd.Parameters.AddWithValue("@idCategoria", idCategoria);
-            object result = cmd.ExecuteScalar();
-            return result != null ? result.ToString() : "TEXT";
-        }
-
         public List<Dictionary<string, object>> GetJugadores()
         {
             List<Dictionary<string, object>> listaJugadores = new List<Dictionary<string, object>>();

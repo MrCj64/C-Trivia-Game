@@ -8,6 +8,12 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+	<ItemGroup>
+		<Content Include="Assets\**\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
   <ItemGroup>
     <None Remove="Views\archivo.png" />
     <None Remove="Views\asistente-virtual.png" />
@@ -74,5 +80,6 @@
     <Folder Include="Assets\Audios\Videojuegos\Pregunta 3\" />
     <Folder Include="Assets\Audios\Videojuegos\Pregunta 4\" />
   </ItemGroup>
+	
 
 </Project>

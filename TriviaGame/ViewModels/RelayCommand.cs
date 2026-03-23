@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace TriviaGame.ViewModels
 {
-    internal class RelayCommand : ICommand
+    public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;
         private readonly Action _executeNonParameter;

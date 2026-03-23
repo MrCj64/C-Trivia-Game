@@ -4,107 +4,143 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TriviaGame.Views"
-      mc:Ignorable="d"
-      Width="1280" Height="720">
+      mc:Ignorable="d" Width="1280" Height="720">
 
-    <Grid Width="1280" Height="720" Margin="-1,0,1,0">
+    <Grid Width="1280" Height="720">
         <Grid.Background>
             <ImageBrush ImageSource="/Views/Fondo.png"/>
         </Grid.Background>
-        <Button x:Name="BtnA" HorizontalAlignment="Left" Margin="260,279,0,0" VerticalAlignment="Top" 
-            Height="178" Width="244" 
-            BorderBrush="#FF7AD8D8"
-            FocusVisualStyle="{x:Null}" Background="#7F7AD8D8">
-            <Image Source="/Views/asistente-virtual.png" Width="150" Height="150" Stretch="Uniform"/>
-            <Button.Template>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border" 
-                        BorderBrush="#FF7AD8D9" 
-                        BorderThickness="1" 
-                        CornerRadius="40" 
-                        Background="{TemplateBinding Background}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#FFADFFFF" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
-        <Button x:Name="BtnB" HorizontalAlignment="Left" Margin="796,279,0,0" VerticalAlignment="Top" 
-            Height="178" Width="244" 
-            Background="#7FF2D17A" 
-            BorderBrush="#FFF2D17B"
-            FocusVisualStyle="{x:Null}" Foreground="#FFF2D17A">
-            <Image Source="/Views/asistente-virtual.png" Width="150" Height="150" Stretch="Uniform"/>
-            <Button.Template>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border" 
-                        BorderBrush="#FFF2D17B" 
-                        BorderThickness="1" 
-                        CornerRadius="40" 
-                        Background="{TemplateBinding Background}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#FFFFE100" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
-        <Button x:Name="BtnC" HorizontalAlignment="Left" Margin="260,493,0,0" VerticalAlignment="Top" 
-            Height="178" Width="244" 
-            Background="#7FDE5353" 
-            BorderBrush="#FFDE5353"
-            FocusVisualStyle="{x:Null}" Foreground="#FFDE5353">
-            <Image Source="/Views/asistente-virtual.png" Width="150" Height="150" Stretch="Uniform"/>
-            <Button.Template>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border" 
-                        BorderBrush="#FFDE5353" 
-                        BorderThickness="1" 
-                        CornerRadius="40" 
-                        Background="{TemplateBinding Background}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#FFFF8080" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
-        <Button x:Name="BtnD" HorizontalAlignment="Left" Margin="798,493,0,0" VerticalAlignment="Top" 
-            Height="178" Width="242" 
-            Background="#7F6CB079" 
-            BorderBrush="#FF6CB079"
-            FocusVisualStyle="{x:Null}" Foreground="#FF6CB079">
-            <Image Source="/Views/asistente-virtual.png" Width="150" Height="150" Stretch="Uniform"/>
-            <Button.Template>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border" 
-                        BorderBrush="#FF7AD8D9" 
-                        BorderThickness="1" 
-                        CornerRadius="40" 
-                        Background="{TemplateBinding Background}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#FFB2FF59" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
-        <Border BorderBrush="#FF57248E" BorderThickness="1" Margin="49,40,45,484" CornerRadius="40,40,40,40" Background="#B257248E">
-            <TextBlock x:Name="TextoPregunta" TextWrapping="Wrap" Margin="0,25,0,0" Width="1090" Height="148" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="35"/>
+
+        <Border BorderBrush="#FF57248E" BorderThickness="1"
+                Margin="49,40,45,484" CornerRadius="40" Background="#B257248E">
+            <TextBlock Text="{Binding TextoPregunta}"
+                       TextWrapping="Wrap" Margin="0,25,0,0"
+                       Width="1090" Height="148"
+                       HorizontalAlignment="Center" VerticalAlignment="Top"
+                       FontFamily="Segoe UI Variable Display Semibold"
+                       FontSize="35" Foreground="White"/>
         </Border>
+
+        <Button HorizontalAlignment="Left" Margin="358,289,0,0" VerticalAlignment="Top"
+                Height="178" Width="244"
+                Background="{Binding ColorA}"
+                BorderBrush="#FF7AD8D8" FocusVisualStyle="{x:Null}"
+                Command="{Binding ResponderCommand}" CommandParameter="A">
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" BorderBrush="#FF7AD8D9" BorderThickness="1"
+                            CornerRadius="40" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFADFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Width="60" Height="60" Margin="0,0,0,8"
+                        Command="{Binding ReproducirCommand}" CommandParameter="A"
+                        Background="White" BorderThickness="0"
+                        ToolTip="Reproducir audio A">
+                    <TextBlock Text="▶" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+                <TextBlock Text="Opción A" FontSize="16"
+                           FontFamily="Segoe UI Variable Display Light"
+                           HorizontalAlignment="Center" Foreground="Black"/>
+            </StackPanel>
+        </Button>
+
+        <Button HorizontalAlignment="Left" Margin="678,289,0,0" VerticalAlignment="Top"
+                Height="178" Width="244"
+                Background="{Binding ColorB}"
+                BorderBrush="#FFF2D17B" FocusVisualStyle="{x:Null}"
+                Command="{Binding ResponderCommand}" CommandParameter="B">
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" BorderBrush="#FFF2D17B" BorderThickness="1"
+                            CornerRadius="40" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFFFE100"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Width="60" Height="60" Margin="0,0,0,8"
+                        Command="{Binding ReproducirCommand}" CommandParameter="B"
+                        Background="White" BorderThickness="0" ToolTip="Reproducir audio B">
+                    <TextBlock Text="▶" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+                <TextBlock Text="Opción B" FontSize="16"
+                           FontFamily="Segoe UI Variable Display Light"
+                           HorizontalAlignment="Center" Foreground="Black"/>
+            </StackPanel>
+        </Button>
+
+        <Button HorizontalAlignment="Left" Margin="358,503,0,0" VerticalAlignment="Top"
+                Height="178" Width="244"
+                Background="{Binding ColorC}"
+                BorderBrush="#FFDE5353" FocusVisualStyle="{x:Null}"
+                Command="{Binding ResponderCommand}" CommandParameter="C">
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" BorderBrush="#FFDE5353" BorderThickness="1"
+                            CornerRadius="40" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFFF8080"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Width="60" Height="60" Margin="0,0,0,8"
+                        Command="{Binding ReproducirCommand}" CommandParameter="C"
+                        Background="White" BorderThickness="0" ToolTip="Reproducir audio C">
+                    <TextBlock Text="▶" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+                <TextBlock Text="Opción C" FontSize="16"
+                           FontFamily="Segoe UI Variable Display Light"
+                           HorizontalAlignment="Center" Foreground="Black"/>
+            </StackPanel>
+        </Button>
+
+        <Button HorizontalAlignment="Left" Margin="678,503,0,0" VerticalAlignment="Top"
+                Height="178" Width="244"
+                Background="{Binding ColorD}"
+                BorderBrush="#FF6CB079" FocusVisualStyle="{x:Null}"
+                Command="{Binding ResponderCommand}" CommandParameter="D">
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" BorderBrush="#FF7AD8D9" BorderThickness="1"
+                            CornerRadius="40" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFB2FF59"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Width="60" Height="60" Margin="0,0,0,8"
+                        Command="{Binding ReproducirCommand}" CommandParameter="D"
+                        Background="White" BorderThickness="0" ToolTip="Reproducir audio D">
+                    <TextBlock Text="▶" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+                <TextBlock Text="Opción D" FontSize="16"
+                           FontFamily="Segoe UI Variable Display Light"
+                           HorizontalAlignment="Center" Foreground="Black"/>
+            </StackPanel>
+        </Button>
 
     </Grid>
 </UserControl>

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace TriviaGame.ViewModels
 {
-    class propertiesChangesViewModel : INotifyPropertyChanged
+    public class propertiesChangesViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void onPropertyChanged([CallerMemberName] string name = null)

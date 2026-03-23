@@ -5,7 +5,7 @@ using System.Text;
 namespace TriviaGame.ViewModels
 {
     //Clase para implementar la logica del menu de inicio
-    internal class mainMenuViewModel : propertiesChangesViewModel
+    public class mainMenuViewModel : propertiesChangesViewModel
     {
         public RelayCommand startGameCommand { get; set; }
         public RelayCommand scoreMenuCommand { get; set; }
