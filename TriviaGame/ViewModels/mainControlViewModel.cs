@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TriviaGame.Views;
 using System.Linq;
 using TriviaGame.Services;
 using TriviaGame.Models;
@@ -11,6 +12,13 @@ namespace TriviaGame.ViewModels
     //Esta clase es la que se va a conectar en el mainWindow.xaml.cs
     internal class mainControlViewModel : propertiesChangesViewModel
     {
+        public RelayCommand mainMenuCommand { get; set; }
+        public RelayCommand gameCommand { get; set; }
+        public RelayCommand scoreCommand { get; set; }
+
+        public RelayCommand LoginCommand { get; set; }
+
+
         private object _currentView;
         private queryService _queryService;
         private Random _random;
@@ -29,10 +37,12 @@ namespace TriviaGame.ViewModels
         {
             _queryService = new queryService();
             _random = new Random();
-            CurrentView = new mainMenuViewModel(
+            CurrentView = new loginViewModel(
+                this,
                 startGame: (categoryId) => selectedCategory(categoryId),
                 scoreMenu: () => CurrentView = new finalScoreViewModel()
             );
+
         }
 
         public void selectedCategory(string categoryId)
