@@ -47,32 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Audios\Cultura general\Pregunta 1\" />
-    <Folder Include="Assets\Audios\Cultura general\Pregunta 2\" />
-    <Folder Include="Assets\Audios\Cultura general\Pregunta 3\" />
-    <Folder Include="Assets\Audios\Cultura general\Pregunta 4\" />
-    <Folder Include="Assets\Audios\Deportes\Pregunta 1\" />
-    <Folder Include="Assets\Audios\Deportes\Pregunta 2\" />
-    <Folder Include="Assets\Audios\Deportes\Pregunta 3\" />
-    <Folder Include="Assets\Audios\Deportes\Pregunta 4\" />
-    <Folder Include="Assets\Audios\Entretenimiento\Pregunta 1\" />
-    <Folder Include="Assets\Audios\Entretenimiento\Pregunta 3\" />
-    <Folder Include="Assets\Audios\Entretenimiento\Pregunta 4\" />
-    <Folder Include="Assets\Audios\Geografia\Pregunta 1\" />
-    <Folder Include="Assets\Audios\Geografia\Pregunta 2\" />
-    <Folder Include="Assets\Audios\Geografia\Pregunta 3\" />
-    <Folder Include="Assets\Audios\Geografia\Pregunta 4\" />
-    <Folder Include="Assets\Audios\Historia\Pregunta 1\" />
-    <Folder Include="Assets\Audios\Historia\Pregunta 2\" />
-    <Folder Include="Assets\Audios\Historia\Pregunta 3\" />
-    <Folder Include="Assets\Audios\Historia\Pregunta 4\" />
     <Folder Include="Assets\Audios\Musica\Pregunta 1\" />
-    <Folder Include="Assets\Audios\Musica\Pregunta 3\" />
-    <Folder Include="Assets\Audios\Musica\Pregunta 4\" />
-    <Folder Include="Assets\Audios\Videojuegos\Pregunta 1\" />
-    <Folder Include="Assets\Audios\Videojuegos\Pregunta 2\" />
-    <Folder Include="Assets\Audios\Videojuegos\Pregunta 3\" />
-    <Folder Include="Assets\Audios\Videojuegos\Pregunta 4\" />
   </ItemGroup>
 
 </Project>
