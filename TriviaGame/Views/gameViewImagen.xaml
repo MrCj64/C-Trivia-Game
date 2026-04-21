@@ -8,7 +8,7 @@
 
     <Grid Width="1280" Height="720">
         <Grid.Background>
-            <ImageBrush ImageSource="/Views/Fondo.png"/>
+            <ImageBrush ImageSource="/Views/Imagenes/Fondo.png"/>
         </Grid.Background>
 
         <Border BorderBrush="#FF57248E" BorderThickness="1"

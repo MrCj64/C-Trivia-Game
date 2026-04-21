@@ -9,7 +9,7 @@
              Background="Chocolate">
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="/Views/Fondo.png"/>
+            <ImageBrush ImageSource="/Views/Imagenes/Fondo.png"/>
         </Grid.Background>
         <Button Content="Menu"
         Command="{Binding menuPrinCommand}"
