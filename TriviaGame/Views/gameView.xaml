@@ -9,7 +9,7 @@
 
     <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
         <Grid.Background>
-            <ImageBrush ImageSource="/Views/Fondo.png"/>
+            <ImageBrush ImageSource="/Views/Imagenes/Fondo.png"/>
         </Grid.Background>
 
         <Border BorderBrush="#FF57248E" BorderThickness="1"

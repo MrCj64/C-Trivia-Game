@@ -8,7 +8,7 @@
              d:DesignHeight="720" d:DesignWidth="1280">
     <Grid RenderTransformOrigin="0.502,0.514">
         <Grid.Background>
-            <ImageBrush ImageSource="/Views/Fondo.png"/>
+            <ImageBrush ImageSource="/Views/Imagenes/Fondo.png"/>
         </Grid.Background>
         <Label Content="Trivia Game" HorizontalAlignment="Center" Margin="0,9,0,0" VerticalAlignment="Top" Height="126" Width="540" FontFamily="Bauhaus 93" FontSize="100" Foreground="Black"/>
         
@@ -23,7 +23,7 @@
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid Background="Transparent">
-                        <Image Source="/Views/archivo.png" Stretch="Uniform"/>
+                        <Image Source="/Views/Imagenes/archivo.png" Stretch="Uniform"/>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Grid>
 
@@ -59,7 +59,7 @@
         Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.Background>
-                <ImageBrush ImageSource="/Views/globo.png"/>
+                <ImageBrush ImageSource="/Views/Imagenes/globo.png"/>
             </Button.Background>
             <Button.RenderTransform>
                 <TransformGroup>
@@ -73,9 +73,9 @@
                     <Grid>
                         <Path x:Name="forma" Data="M 100,400 L 0,0 L 200,0 Z" 
                       Fill="#5ce1e6" Stroke="#5ce1e6" StrokeThickness="2" Stretch="Fill"/>
-                        <Image Source="/Views/globo.png" Width="110" Margin="0,50,0,0" VerticalAlignment="Top">
+                        <Image Source="/Views/Imagenes/globo.png" Width="110" Margin="0,50,0,0" VerticalAlignment="Top">
                             <Image.OpacityMask>
-                                <ImageBrush ImageSource="/Views/globo.png"/>
+                                <ImageBrush ImageSource="/Views/Imagenes/globo.png"/>
                             </Image.OpacityMask>
                         </Image>
                     </Grid>
@@ -121,7 +121,7 @@
                 <ImageBrush/>
             </Button.BorderBrush>
             <Button.Background>
-                <ImageBrush ImageSource="/Views/nota-musical.png"/>
+                <ImageBrush ImageSource="/Views/Imagenes/nota-musical.png"/>
             </Button.Background>
             <Button.RenderTransform>
                 <TransformGroup>
@@ -135,7 +135,7 @@
                     <Grid>
                         <Path x:Name="forma" Data="M 100,400 L 0,0 L 200,0 Z" 
                       Fill="#ff751f" Stroke="#ff751f" StrokeThickness="2" Stretch="Fill"/>
-                        <Image Source="/Views/nota-musical.png" Width="90" Margin="0,50,0,0" VerticalAlignment="Top"/>
+                        <Image Source="/Views/Imagenes/nota-musical.png" Width="90" Margin="0,50,0,0" VerticalAlignment="Top"/>
                     </Grid>
 
                     <ControlTemplate.Triggers>
@@ -173,7 +173,7 @@
         Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.Background>
-                <ImageBrush ImageSource="/Views/deporte.png"/>
+                <ImageBrush ImageSource="/Views/Imagenes/deporte.png"/>
             </Button.Background>
             <Button.RenderTransform>
                 <TransformGroup>
@@ -187,7 +187,7 @@
                     <Grid>
                         <Path x:Name="forma" Data="M 100,400 L 0,0 L 200,0 Z" 
                       Fill="#ffde59" Stroke="#ffde59" StrokeThickness="2" Stretch="Fill"/>
-                        <Image Source="/Views/deporte.png" Width="100" Margin="0,50,0,0" VerticalAlignment="Top"/>
+                        <Image Source="/Views/Imagenes/deporte.png" Width="100" Margin="0,50,0,0" VerticalAlignment="Top"/>
                     </Grid>
 
                     <ControlTemplate.Triggers>
@@ -225,7 +225,7 @@
         Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.Background>
-                <ImageBrush ImageSource="/Views/desplazarse.png"/>
+                <ImageBrush ImageSource="/Views/Imagenes/desplazarse.png"/>
             </Button.Background>
             <Button.RenderTransform>
                 <TransformGroup>
@@ -239,7 +239,7 @@
                     <Grid>
                         <Path x:Name="forma" Data="M 100,400 L 0,0 L 200,0 Z" 
                       Fill="#00bf63" Stroke="#FF7AD8D9" StrokeThickness="2" Stretch="Fill"/>
-                        <Image Source="/Views/desplazarse.png" Width="90" Margin="0,50,0,0" VerticalAlignment="Top"/>
+                        <Image Source="/Views/Imagenes/desplazarse.png" Width="90" Margin="0,50,0,0" VerticalAlignment="Top"/>
                     </Grid>
 
                     <ControlTemplate.Triggers>
@@ -289,9 +289,9 @@
                     <Grid>
                         <Path x:Name="forma" Data="M 100,400 L 0,0 L 200,0 Z" 
                       Fill="#004aad" Stroke="#004aad" StrokeThickness="2" Stretch="Fill"/>
-                        <Image Source="/Views/cerebro.png" Width="110" Margin="0,50,0,0" VerticalAlignment="Top">
+                        <Image Source="/Views/Imagenes/cerebro.png" Width="110" Margin="0,50,0,0" VerticalAlignment="Top">
                             <Image.OpacityMask>
-                                <ImageBrush ImageSource="/Views/cerebro.png"/>
+                                <ImageBrush ImageSource="/Views/Imagenes/cerebro.png"/>
                             </Image.OpacityMask>
                         </Image>
                     </Grid>
@@ -331,7 +331,7 @@
                 Width="180" Height="400" HorizontalAlignment="Center" VerticalAlignment="Bottom" BorderBrush="Transparent"
         RenderTransformOrigin="0.5,1">
             <Button.Background>
-                <ImageBrush ImageSource="/Views/control.png"/>
+                <ImageBrush ImageSource="/Views/Imagenes/control.png"/>
             </Button.Background>
             <Button.RenderTransform>
                 <TransformGroup>
@@ -345,7 +345,7 @@
                     <Grid>
                         <Path x:Name="forma" Data="M 100,400 L 0,0 L 200,0 Z" 
                       Fill="#8c52ff" Stroke="#8c52ff" StrokeThickness="2" Stretch="Fill"/>
-                        <Image Source="/Views/control.png" Width="100" Margin="0,50,0,0" VerticalAlignment="Top"/>
+                        <Image Source="/Views/Imagenes/control.png" Width="100" Margin="0,50,0,0" VerticalAlignment="Top"/>
                     </Grid>
 
                     <ControlTemplate.Triggers>
@@ -395,9 +395,9 @@
                     <Grid>
                         <Path x:Name="forma" Data="M 100,400 L 0,0 L 200,0 Z" 
                       Fill="#ff66c4" Stroke="#ff66c4" StrokeThickness="2" Stretch="Fill"/>
-                        <Image Source="/Views/cine.png" Width="100" Margin="0,50,0,0" VerticalAlignment="Top">
+                        <Image Source="/Views/Imagenes/cine.png" Width="100" Margin="0,50,0,0" VerticalAlignment="Top">
                             <Image.OpacityMask>
-                                <ImageBrush ImageSource="/Views/cine.png"/>
+                                <ImageBrush ImageSource="/Views/Imagenes/cine.png"/>
                             </Image.OpacityMask>
                         </Image>
                     </Grid>
