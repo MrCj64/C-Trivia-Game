@@ -8,6 +8,7 @@ namespace TriviaGame.Models
 {
     public class answerModel
     {
+        //Cambiar a listas
         public int id { get; set; }
         public int idQuestion { get; set; }
         public string answer { get; set; }
