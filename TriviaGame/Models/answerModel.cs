@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace TriviaGame.Models
 {
-    internal class answerModel
+    public class answerModel
     {
         public int id { get; set; }
         public int idQuestion { get; set; }
         public string answer { get; set; }
         public bool isCorrect { get; set; }
-
+        public string mediaPath { get; set; } // Para audio e imagen
+        public string answerType { get; set; }
     }
 }
