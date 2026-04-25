@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using TriviaGame.Models;
 
 namespace TriviaGame.ViewModels
 {
     public class audioGameViewModel : propertiesChangesViewModel
     {
-        private readonly List<Dictionary<string, object>> _preguntas;
+        private readonly List<questionModel> _preguntas;
         private readonly Action _onFinished;
         private int _index = 0;
-
         private readonly MediaPlayer _player = new MediaPlayer();
 
         public int Aciertos { get; private set; } = 0;
@@ -27,10 +24,11 @@ namespace TriviaGame.ViewModels
         }
 
         private string _progreso = "";
-        public string Progreso { get => _progreso; set { _progreso = value; onPropertyChanged(); } }
-
-        // Rutas de audio para cada opción (se usan en el command)
-        private string[] _rutasAudio = new string[4];
+        public string Progreso
+        {
+            get => _progreso;
+            set { _progreso = value; onPropertyChanged(); }
+        }
 
         private string _colorA = "Transparent", _colorB = "Transparent",
                        _colorC = "Transparent", _colorD = "Transparent";
@@ -39,50 +37,42 @@ namespace TriviaGame.ViewModels
         public string ColorC { get => _colorC; set { _colorC = value; onPropertyChanged(); } }
         public string ColorD { get => _colorD; set { _colorD = value; onPropertyChanged(); } }
 
-        public ICommand ReproducirCommand { get; }  
-        public ICommand ResponderCommand { get; }  
+        public ICommand ReproducirCommand { get; }
+        public ICommand ResponderCommand { get; }
 
-        public audioGameViewModel(List<Dictionary<string, object>> preguntas, Action onFinished)
+        public audioGameViewModel(List<questionModel> preguntas, Action onFinished)
         {
             _preguntas = preguntas;
             _onFinished = onFinished;
-
-            ReproducirCommand = new RelayCommand((obj) => Reproducir(obj as string));
-            ResponderCommand = new RelayCommand((obj) => Responder(obj as string));
-
+            ReproducirCommand = new RelayCommand(obj => Reproducir(obj as string));
+            ResponderCommand = new RelayCommand(obj => Responder(obj as string));
             CargarPregunta();
         }
 
         private void CargarPregunta()
         {
             if (_index >= _preguntas.Count) { _onFinished?.Invoke(); return; }
-
             ResetColores();
             _player.Stop();
-
             var pregunta = _preguntas[_index];
-            var respuestas = (List<Dictionary<string, object>>)pregunta["respuestas"];
-
-            TextoPregunta = pregunta["nomPregunta"].ToString();
+            TextoPregunta = pregunta.question;
             Progreso = $"Pregunta {_index + 1} de {_preguntas.Count}";
-
-            for (int i = 0; i < 4; i++)
-                _rutasAudio[i] = i < respuestas.Count
-                    ? respuestas[i]["rutaRespuesta"]?.ToString() ?? ""
-                    : "";
         }
 
         private void Reproducir(string opcion)
         {
+            var respuestas = _preguntas[_index].answers;
             int idx = opcion switch { "A" => 0, "B" => 1, "C" => 2, "D" => 3, _ => -1 };
-            if (idx < 0 || string.IsNullOrEmpty(_rutasAudio[idx])) return;
+            if (idx < 0 || idx >= respuestas.Count) return;
+
+            string ruta = respuestas[idx].mediaPath ?? "";
+            if (string.IsNullOrEmpty(ruta)) return;
 
             try
             {
                 string rutaCompleta = System.IO.Path.Combine(
                     AppDomain.CurrentDomain.BaseDirectory,
-                    _rutasAudio[idx].Replace("/", "\\"));
-
+                    ruta.Replace("/", "\\"));
                 _player.Open(new Uri(rutaCompleta, UriKind.Absolute));
                 _player.Play();
             }
@@ -91,13 +81,12 @@ namespace TriviaGame.ViewModels
 
         private void Responder(string opcion)
         {
-            var respuestas = (List<Dictionary<string, object>>)_preguntas[_index]["respuestas"];
+            var respuestas = _preguntas[_index].answers;
             int elegido = opcion switch { "A" => 0, "B" => 1, "C" => 2, "D" => 3, _ => -1 };
             if (elegido < 0 || elegido >= respuestas.Count) return;
 
-            bool esCorrecta = (bool)respuestas[elegido]["EsCorrecta"];
+            if (respuestas[elegido].isCorrect) Aciertos++; else Errores++;
             MostrarFeedback(respuestas, elegido);
-            if (esCorrecta) Aciertos++; else Errores++;
 
             var timer = new System.Windows.Threading.DispatcherTimer
             { Interval = TimeSpan.FromSeconds(1) };
@@ -105,12 +94,12 @@ namespace TriviaGame.ViewModels
             timer.Start();
         }
 
-        private void MostrarFeedback(List<Dictionary<string, object>> respuestas, int elegido)
+        private void MostrarFeedback(List<answerModel> respuestas, int elegido)
         {
             string[] c = { "Transparent", "Transparent", "Transparent", "Transparent" };
             for (int i = 0; i < respuestas.Count && i < 4; i++)
             {
-                if ((bool)respuestas[i]["EsCorrecta"]) c[i] = "#FF4CAF50";
+                if (respuestas[i].isCorrect) c[i] = "#FF4CAF50";
                 else if (i == elegido) c[i] = "#FFF44336";
             }
             ColorA = c[0]; ColorB = c[1]; ColorC = c[2]; ColorD = c[3];

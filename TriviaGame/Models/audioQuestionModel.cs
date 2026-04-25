@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TriviaGame.Models
 {
-    internal class audioQuestionModel : questionModel
+    public class audioQuestionModel : questionModel
     {
         public string pathAudio { get; set; }
     }

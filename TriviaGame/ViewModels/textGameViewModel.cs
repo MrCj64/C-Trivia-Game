@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
+using TriviaGame.Models;
 
 namespace TriviaGame.ViewModels
 {
     public class textGameViewModel : propertiesChangesViewModel
     {
-        private readonly List<Dictionary<string, object>> _preguntas;
+        private readonly List<questionModel> _preguntas;
         private readonly Action _onFinished;
         private int _index = 0;
 
@@ -22,6 +19,13 @@ namespace TriviaGame.ViewModels
         {
             get => _textoPregunta;
             set { _textoPregunta = value; onPropertyChanged(); }
+        }
+
+        private string _progreso = "";
+        public string Progreso
+        {
+            get => _progreso;
+            set { _progreso = value; onPropertyChanged(); }
         }
 
         private string _textoA = "", _textoB = "", _textoC = "", _textoD = "";
@@ -37,83 +41,60 @@ namespace TriviaGame.ViewModels
         public string ColorC { get => _colorC; set { _colorC = value; onPropertyChanged(); } }
         public string ColorD { get => _colorD; set { _colorD = value; onPropertyChanged(); } }
 
-        private string _progreso = "";
-        public string Progreso { get => _progreso; set { _progreso = value; onPropertyChanged(); } }
         public ICommand ResponderCommand { get; }
 
-        public textGameViewModel(List<Dictionary<string, object>> preguntas, Action onFinished)
+        public textGameViewModel(List<questionModel> preguntas, Action onFinished)
         {
             _preguntas = preguntas;
             _onFinished = onFinished;
-            ResponderCommand = new RelayCommand((obj) => Responder(obj as string));
+            ResponderCommand = new RelayCommand(obj => Responder(obj as string));
             CargarPregunta();
         }
+
         private void CargarPregunta()
         {
-            if (_index >= _preguntas.Count)
-            {
-                _onFinished?.Invoke();
-                return;
-            }
+            if (_index >= _preguntas.Count) { _onFinished?.Invoke(); return; }
 
             ResetColores();
             var pregunta = _preguntas[_index];
-            var respuestas = (List<Dictionary<string, object>>)pregunta["respuestas"];
+            var respuestas = pregunta.answers;
 
-            TextoPregunta = pregunta["nomPregunta"].ToString();
+            TextoPregunta = pregunta.question;
             Progreso = $"Pregunta {_index + 1} de {_preguntas.Count}";
 
-            TextoA = respuestas.Count > 0 ? respuestas[0]["textRespuesta"]?.ToString() ?? "" : "";
-            TextoB = respuestas.Count > 1 ? respuestas[1]["textRespuesta"]?.ToString() ?? "" : "";
-            TextoC = respuestas.Count > 2 ? respuestas[2]["textRespuesta"]?.ToString() ?? "" : "";
-            TextoD = respuestas.Count > 3 ? respuestas[3]["textRespuesta"]?.ToString() ?? "" : "";
+            TextoA = respuestas.Count > 0 ? respuestas[0].answer ?? "" : "";
+            TextoB = respuestas.Count > 1 ? respuestas[1].answer ?? "" : "";
+            TextoC = respuestas.Count > 2 ? respuestas[2].answer ?? "" : "";
+            TextoD = respuestas.Count > 3 ? respuestas[3].answer ?? "" : "";
         }
 
         private void Responder(string opcion)
         {
-            var pregunta = _preguntas[_index];
-            var respuestas = (List<Dictionary<string, object>>)pregunta["respuestas"];
-
+            var respuestas = _preguntas[_index].answers;
             int elegido = opcion switch { "A" => 0, "B" => 1, "C" => 2, "D" => 3, _ => -1 };
             if (elegido < 0 || elegido >= respuestas.Count) return;
 
-            bool esCorrecta = (bool)respuestas[elegido]["EsCorrecta"];
-
+            if (respuestas[elegido].isCorrect) Aciertos++; else Errores++;
             MostrarFeedback(respuestas, elegido);
 
-            if (esCorrecta) Aciertos++;
-            else Errores++;
-
             var timer = new System.Windows.Threading.DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            timer.Tick += (s, e) =>
-            {
-                timer.Stop();
-                _index++;
-                CargarPregunta();
-            };
+            { Interval = TimeSpan.FromSeconds(1) };
+            timer.Tick += (s, e) => { timer.Stop(); _index++; CargarPregunta(); };
             timer.Start();
         }
-        private void MostrarFeedback(List<Dictionary<string, object>> respuestas, int elegido)
-        {
-            string[] colores = { "Transparent", "Transparent", "Transparent", "Transparent" };
 
+        private void MostrarFeedback(List<answerModel> respuestas, int elegido)
+        {
+            string[] c = { "Transparent", "Transparent", "Transparent", "Transparent" };
             for (int i = 0; i < respuestas.Count && i < 4; i++)
             {
-                if ((bool)respuestas[i]["EsCorrecta"])
-                    colores[i] = "#FF4CAF50";   
-                else if (i == elegido)
-                    colores[i] = "#FFF44336";  
+                if (respuestas[i].isCorrect) c[i] = "#FF4CAF50";
+                else if (i == elegido) c[i] = "#FFF44336";
             }
+            ColorA = c[0]; ColorB = c[1]; ColorC = c[2]; ColorD = c[3];
+        }
 
-            ColorA = colores[0]; ColorB = colores[1];
-            ColorC = colores[2]; ColorD = colores[3];
-        }
-        private void ResetColores()
-        {
+        private void ResetColores() =>
             ColorA = ColorB = ColorC = ColorD = "Transparent";
-        }
     }
 }

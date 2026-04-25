@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TriviaGame.Models
 {
-    internal class textQuestionModel : questionModel
+    public class textQuestionModel : questionModel
     {
     }
 }
