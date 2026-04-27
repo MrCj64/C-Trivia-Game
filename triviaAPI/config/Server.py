@@ -6,17 +6,12 @@ password = "root"
 host = "127.0.0.1"
 port  = 3306
 database = "triviagamebd"
-metadata_obj = db.MetaData()
 
 def get_connection():
     engine = db.create_engine(
         f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}", echo =True
     )
     return engine
-
-# def get_table():
-
-#     #Definir un nombre de tabla:
 
 try:
     engine = get_connection()
