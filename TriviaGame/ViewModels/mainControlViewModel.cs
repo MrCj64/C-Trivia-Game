@@ -51,32 +51,52 @@ namespace TriviaGame.ViewModels
             if (!int.TryParse(categoryId, out int idCategoria)) return;
 
             categoriaActual = queryService.GetNombreCategoria(idCategoria);
-            var preguntas = queryService.GetPreguntas(idCategoria);
-            if (preguntas.Count == 0) return;
 
-            var preguntasAleatorias = preguntas.OrderBy(x => random.Next()).ToList();
-            foreach (var pregunta in preguntasAleatorias)
-            {
-                int idPregunta = (int)pregunta["idPregunta"];
-                var respuestas = queryService.GetRespuestas(idPregunta);
-                pregunta["respuestas"] = respuestas.OrderBy(x => random.Next()).ToList();
-            }
+            var preguntasRaw = queryService.GetPreguntas(idCategoria);
+            if (preguntasRaw.Count == 0) return;
 
-            MostrarPregunta(preguntasAleatorias, 0);
+            var preguntas = preguntasRaw
+                .OrderBy(_ => random.Next())
+                .Select(p =>
+                {
+                    var respuestasRaw = queryService.GetRespuestas((int)p["idPregunta"])
+                        .OrderBy(_ => random.Next())
+                        .Select(r => new answerModel
+                        {
+                            answer = r["textRespuesta"]?.ToString() ?? "",
+                            isCorrect = (bool)r["EsCorrecta"],
+                            mediaPath = r["rutaRespuesta"]?.ToString() ?? "",
+                            answerType = r["tipoRespuesta"]?.ToString() ?? "TEXT"
+                        })
+                        .ToList();
+
+                    string tipo = respuestasRaw.FirstOrDefault()?.answerType?.ToUpper() ?? "TEXT";
+
+                    questionModel pregunta = tipo switch
+                    {
+                        "SOUND" => new audioQuestionModel { pathAudio = respuestasRaw.FirstOrDefault()?.mediaPath },
+                        "IMG" => new imageQuestionModel { pathImage = respuestasRaw.FirstOrDefault()?.mediaPath },
+                        _ => new textQuestionModel()
+                    };
+
+                    pregunta.question = p["nomPregunta"].ToString();
+                    pregunta.categoryId = idCategoria;
+                    pregunta.answers = respuestasRaw;
+
+                    return pregunta;
+                })
+                .ToList();
+
+            MostrarPregunta(preguntas, 0);
         }
 
-        private void MostrarPregunta(List<Dictionary<string, object>> preguntas, int index)
+        private void MostrarPregunta(List<questionModel> preguntas, int index)
         {
             if (index >= preguntas.Count)
             {
                 CurrentView = new finalScoreViewModel(IrAMenu, categoriaActual, aciertosTotal, erroresTotal);
                 return;
             }
-
-            var respuestas = (List<Dictionary<string, object>>)preguntas[index]["respuestas"];
-            string tipo = respuestas.Count > 0
-                ? respuestas[0]["tipoRespuesta"]?.ToString() ?? "TEXT"
-                : "TEXT";
 
             Action siguiente = () =>
             {
@@ -89,26 +109,14 @@ namespace TriviaGame.ViewModels
                 MostrarPregunta(preguntas, index + 1);
             };
 
-            switch (tipo.ToUpper())
+            CurrentView = preguntas[index] switch
             {
-                case "TEXT":
-                    CurrentView = new textGameViewModel(
-                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
-                    break;
-                case "SOUND":
-                    CurrentView = new audioGameViewModel(
-                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
-                    break;
-                case "IMG":
-                    CurrentView = new ImageGameViewModel(
-                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
-                    break;
-                default:
-                    CurrentView = new textGameViewModel(
-                        new List<Dictionary<string, object>> { preguntas[index] }, siguiente);
-                    break;
-            }
+                audioQuestionModel => new audioGameViewModel(new List<questionModel> { preguntas[index] }, siguiente),
+                imageQuestionModel => new ImageGameViewModel(new List<questionModel> { preguntas[index] }, siguiente),
+                _ => new textGameViewModel(new List<questionModel> { preguntas[index] }, siguiente)
+            };
         }
+
         public void IrAMenu()
         {
             CurrentView = new mainMenuViewModel(

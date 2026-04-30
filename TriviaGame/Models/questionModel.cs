@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TriviaGame.Models
 {
-    internal abstract class questionModel
+    public abstract class questionModel
     {
         public int Id { get; set; }
         public int categoryId { get; set; }
