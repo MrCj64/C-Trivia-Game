@@ -11,7 +11,7 @@
             <ImageBrush ImageSource="/Views/Imagenes/Fondo.png"/>
         </Grid.Background>
         <Label Content="Trivia Game" HorizontalAlignment="Center" Margin="0,9,0,0" VerticalAlignment="Top" Height="126" Width="540" FontFamily="Bauhaus 93" FontSize="100" Foreground="Black"/>
-        
+
         <Button x:Name="BtnArchivo" Command="{Binding scoreMenuCommand}" HorizontalAlignment="Left" Margin="1106,257,0,0" 
         VerticalAlignment="Top" Height="103" Width="138" 
         Background="Transparent" BorderBrush="Transparent"
@@ -432,5 +432,7 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
+        <Button x:Name="Sala" Content="Sala de espera" HorizontalAlignment="Left" Margin="828,140,0,0" VerticalAlignment="Top" Height="92" Width="193" FontSize="22" RenderTransformOrigin="-0.184,0.634" Click="Sala_Click"/>
+        <Button x:Name="Score" Content="Score" HorizontalAlignment="Left" Margin="924,257,0,0" VerticalAlignment="Top" FontSize="36" Height="103" Width="129" Click="Score_Click"/>
     </Grid>
 </UserControl>

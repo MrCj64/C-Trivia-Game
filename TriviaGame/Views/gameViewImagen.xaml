@@ -12,17 +12,17 @@
         </Grid.Background>
 
         <Border BorderBrush="#FF57248E" BorderThickness="1"
-                Margin="49,40,45,546" CornerRadius="40" Background="#B257248E">
+                Margin="49,40,71,546" CornerRadius="40" Background="#B257248E">
             <TextBlock Text="{Binding TextoPregunta}"
                        TextWrapping="Wrap" Margin="0,13,0,0"
-                       Width="1090" Height="110"
+                       Width="990" Height="110"
                        HorizontalAlignment="Center" VerticalAlignment="Top"
                        FontFamily="Segoe UI Variable Display Semibold"
                        FontSize="35" Foreground="White"/>
         </Border>
 
         <Button HorizontalAlignment="Left" Margin="110,218,0,0" VerticalAlignment="Top"
-                Height="213" Width="487"
+                Height="213" Width="450"
                 Background="{Binding ColorA}"
                 BorderBrush="#FF7AD8D8" FocusVisualStyle="{x:Null}"
                 Command="{Binding ResponderCommand}" CommandParameter="A">
@@ -39,11 +39,11 @@
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Button.Template>
-            <Image Source="{Binding RutaA}" Height="171" Width="424" Stretch="Uniform"/>
+            <Image Source="{Binding RutaA}" Height="171" Width="298" Stretch="Uniform"/>
         </Button>
 
         <Button HorizontalAlignment="Left" Margin="700,218,0,0" VerticalAlignment="Top"
-                Height="213" Width="487"
+                Height="213" Width="450"
                 Background="{Binding ColorB}"
                 BorderBrush="#FFF2D17B" FocusVisualStyle="{x:Null}"
                 Command="{Binding ResponderCommand}" CommandParameter="B">
@@ -60,11 +60,11 @@
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Button.Template>
-            <Image Source="{Binding RutaB}" Height="171" Width="424" Stretch="Uniform"/>
+            <Image Source="{Binding RutaB}" Height="171" Width="302" Stretch="Uniform" RenderTransformOrigin="0.998,0.462"/>
         </Button>
 
         <Button HorizontalAlignment="Left" Margin="110,468,0,0" VerticalAlignment="Top"
-                Height="213" Width="487"
+                Height="213" Width="450"
                 Background="{Binding ColorC}"
                 BorderBrush="#FFDE5353" FocusVisualStyle="{x:Null}"
                 Command="{Binding ResponderCommand}" CommandParameter="C">
@@ -81,11 +81,11 @@
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Button.Template>
-            <Image Source="{Binding RutaC}" Height="171" Width="424" Stretch="Uniform"/>
+            <Image Source="{Binding RutaC}" Height="171" Width="312" Stretch="Uniform"/>
         </Button>
 
         <Button HorizontalAlignment="Left" Margin="700,468,0,0" VerticalAlignment="Top"
-                Height="213" Width="487"
+                Height="213" Width="450"
                 Background="{Binding ColorD}"
                 BorderBrush="#FF6CB079" FocusVisualStyle="{x:Null}"
                 Command="{Binding ResponderCommand}" CommandParameter="D">
@@ -102,8 +102,9 @@
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Button.Template>
-            <Image Source="{Binding RutaD}" Height="171" Width="424" Stretch="Uniform"/>
+            <Image Source="{Binding RutaD}" Height="171" Width="283" Stretch="Uniform"/>
         </Button>
+        <Label x:Name="Timer" Content="10" HorizontalAlignment="Left" Margin="1156,567,0,0" VerticalAlignment="Top" Height="89" Width="114" FontSize="72" FontFamily="Arial Black" Foreground="White"/>
 
     </Grid>
 </UserControl>

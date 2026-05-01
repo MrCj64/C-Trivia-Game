@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace TriviaGame.Views
 {
@@ -20,9 +21,35 @@ namespace TriviaGame.Views
     /// </summary>
     public partial class gameViewImagen : UserControl
     {
+        DispatcherTimer _timer;
+        int _tiempoRestante = 10;
+        SalaEspera ventana = new SalaEspera();
         public gameViewImagen()
         {
             InitializeComponent();
+            IniciarTemporizador();
+        }
+
+        private void IniciarTemporizador()
+        {
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromSeconds(1);
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (_tiempoRestante > 0)
+            {
+                _tiempoRestante--;
+                Timer.Content = _tiempoRestante.ToString();
+            }
+            else
+            {
+                _timer.Stop();
+                ventana.Show();
+            }
         }
     }
 }

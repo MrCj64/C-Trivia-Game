@@ -141,6 +141,7 @@
                            HorizontalAlignment="Center" Foreground="Black"/>
             </StackPanel>
         </Button>
+        <Label x:Name="Timer" Content="10" HorizontalAlignment="Left" Margin="1156,567,0,0" VerticalAlignment="Top" Height="89" Width="114" FontSize="72" FontFamily="Arial Black" Foreground="White"/>
 
     </Grid>
 </UserControl>
