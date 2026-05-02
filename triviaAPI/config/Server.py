@@ -1,5 +1,6 @@
 
 import sqlalchemy as db
+from sqlalchemy import create_engine, MetaData
 
 user = "root"
 password = "root"
@@ -14,10 +15,13 @@ def get_connection():
     return engine
 
 try:
-    engine = get_connection()
+    conn = get_connection()
+    meta = MetaData()
     print(f"Connection to the {host} for user {user} created succesfully.")
 except Exception as ex:
     print("Connection could not be made due to the following error:\n",ex)
+
+
 
 # Instalar la libreria de sqlalchemy: pip install sqlalchemy ✓ 
 # Instalar la liberia de pymysql: pip install mysql ✓

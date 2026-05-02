@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: triviabd
+-- Host: 127.0.0.1    Database: triviagamebd
 -- ------------------------------------------------------
 -- Server version	8.0.45
 
@@ -16,28 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `categoria`
+-- Table structure for table `puntuacion`
 --
 
-DROP TABLE IF EXISTS `categoria`;
+DROP TABLE IF EXISTS `puntuacion`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `categoria` (
-  `idCategoria` int NOT NULL,
-  `NombreCategoria` varchar(45) NOT NULL,
-  PRIMARY KEY (`idCategoria`),
-  UNIQUE KEY `idCategoria_UNIQUE` (`idCategoria`)
+CREATE TABLE `puntuacion` (
+  `puntuacionTotal` int NOT NULL,
+  `IdJugador` int NOT NULL,
+  `IdCategoria` int NOT NULL,
+  PRIMARY KEY (`IdJugador`,`IdCategoria`),
+  UNIQUE KEY `IdJugador_UNIQUE` (`IdJugador`),
+  UNIQUE KEY `IdCategoria_UNIQUE` (`IdCategoria`),
+  KEY `idJugador_idx` (`IdJugador`),
+  CONSTRAINT `categoria_puntuacion` FOREIGN KEY (`IdCategoria`) REFERENCES `categoria` (`idCategoria`),
+  CONSTRAINT `jugador_puntuacion` FOREIGN KEY (`IdJugador`) REFERENCES `jugador` (`idJugador`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `categoria`
+-- Dumping data for table `puntuacion`
 --
 
-LOCK TABLES `categoria` WRITE;
-/*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
-INSERT INTO `categoria` VALUES (1,'BancaChismes'),(2,'Musica'),(3,'Deportes'),(4,'Historia'),(5,'Geografía'),(6,'Videojuegos'),(7,'Cultura general'),(8,'Entretenimiento');
-/*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
+LOCK TABLES `puntuacion` WRITE;
+/*!40000 ALTER TABLE `puntuacion` DISABLE KEYS */;
+/*!40000 ALTER TABLE `puntuacion` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-21 22:50:36
+-- Dump completed on 2026-05-01 18:21:14
