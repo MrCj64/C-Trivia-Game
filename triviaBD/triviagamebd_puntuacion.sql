@@ -28,8 +28,8 @@ CREATE TABLE `puntuacion` (
   `IdCategoria` int NOT NULL,
   PRIMARY KEY (`IdJugador`,`IdCategoria`),
   UNIQUE KEY `IdJugador_UNIQUE` (`IdJugador`),
-  UNIQUE KEY `IdCategoria_UNIQUE` (`IdCategoria`),
   KEY `idJugador_idx` (`IdJugador`),
+  KEY `categoria_puntuacion_idx` (`IdCategoria`),
   CONSTRAINT `categoria_puntuacion` FOREIGN KEY (`IdCategoria`) REFERENCES `categoria` (`idCategoria`),
   CONSTRAINT `jugador_puntuacion` FOREIGN KEY (`IdJugador`) REFERENCES `jugador` (`idJugador`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -53,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-01 18:21:14
+-- Dump completed on 2026-05-01 18:35:42
