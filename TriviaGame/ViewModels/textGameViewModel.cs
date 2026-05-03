@@ -10,6 +10,7 @@ namespace TriviaGame.ViewModels
         private readonly List<questionModel> _preguntas;
         private readonly Action _onFinished;
         private int _index = 0;
+        public int Puntuacion { get; private set; } = 0;
 
         public int Aciertos { get; private set; } = 0;
         public int Errores { get; private set; } = 0;
@@ -74,7 +75,13 @@ namespace TriviaGame.ViewModels
             int elegido = opcion switch { "A" => 0, "B" => 1, "C" => 2, "D" => 3, _ => -1 };
             if (elegido < 0 || elegido >= respuestas.Count) return;
 
-            if (respuestas[elegido].isCorrect) Aciertos++; else Errores++;
+            if (respuestas[elegido].isCorrect)
+            { 
+                Aciertos++;
+                Puntuacion += _preguntas[_index].points;
+            }
+            else 
+                Errores++;
             MostrarFeedback(respuestas, elegido);
 
             var timer = new System.Windows.Threading.DispatcherTimer

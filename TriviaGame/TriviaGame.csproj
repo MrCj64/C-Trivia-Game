@@ -84,30 +84,9 @@
     <Resource Include="Views\2do.png" />
     <Resource Include="Views\3ro.png" />
     <Resource Include="Views\4to.png" />
-    <Resource Include="Views\Avatar\1.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Views\Avatar\2.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Views\Avatar\3.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Views\Avatar\4.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Views\Avatar\5.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Views\Avatar\6.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Views\Avatar\7.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Views\Avatar\8.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
+	  <Content Include="Views\Avatar\*.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
     <Resource Include="Views\borrador.png" />
     <Resource Include="Views\Fondo.png" />
     <Resource Include="Views\Imagenes\archivo.png" />
@@ -133,6 +112,12 @@
 
   <ItemGroup>
     <None Include="C:\Users\atris\source\repos\MrCj64\C-Trivia-Game\TriviaGame\Views\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\Fotos\Cultura general\Pregunta 1\chango.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 	
 

@@ -59,17 +59,80 @@
         <Rectangle HorizontalAlignment="Left" Height="70" Margin="359,159,0,0" Stroke="Black" VerticalAlignment="Top" Width="282" Fill="#7F21987F"/>
         <Rectangle HorizontalAlignment="Left" Height="70" Margin="640,159,0,0" Stroke="Black" VerticalAlignment="Top" Width="281" Fill="#7F21987F"/>
         <Rectangle HorizontalAlignment="Left" Height="70" Margin="920,159,0,0" Stroke="Black" VerticalAlignment="Top" Width="282" Fill="#7F21987F"/>
-        <Label Content="Categoria" HorizontalAlignment="Left" Margin="125,162,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="40"/>
-        <Label Content="Aciertos" HorizontalAlignment="Left" Margin="419,162,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="40"/>
-        <Label Content="Errores" HorizontalAlignment="Left" Margin="710,162,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="40"/>
+        <Label Content="Jugador" HorizontalAlignment="Left" Margin="147,162,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="40"/>
+        <Label Content="Categoria" HorizontalAlignment="Left" Margin="419,162,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="40"/>
+        <Label Content="Aciertos" HorizontalAlignment="Left" Margin="710,162,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="40"/>
         <Label Content="Puntuación" HorizontalAlignment="Left" Margin="953,162,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Variable Display Semibold" FontSize="40"/>
         <Rectangle HorizontalAlignment="Left" Height="399" Margin="78,228,0,0" Stroke="Black" VerticalAlignment="Top" Width="282"/>
         <Rectangle HorizontalAlignment="Left" Height="399" Margin="359,228,0,0" Stroke="Black" VerticalAlignment="Top" Width="282"/>
         <Rectangle HorizontalAlignment="Left" Height="399" Margin="639,228,0,0" Stroke="Black" VerticalAlignment="Top" Width="282"/>
-        <TextBlock Text="{Binding Categoria}" HorizontalAlignment="Left" Margin="106,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
-        <TextBlock Text="{Binding Aciertos}" HorizontalAlignment="Left" Margin="383,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
-        <TextBlock Text="{Binding Errores}" HorizontalAlignment="Left" Margin="664,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
-        <TextBlock Text="{Binding Puntuacion}" HorizontalAlignment="Left" Margin="946,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="352" Width="234" TextAlignment="Center" FontFamily="Segoe UI Variable Display Light" FontSize="25"/>
-        
+        <ListView ItemsSource="{Binding Puntuaciones}"
+          HorizontalAlignment="Center"
+          Margin="0,176,0,0"
+          VerticalAlignment="Top"
+          Height="398"
+          Width="1086"
+          Background="Transparent">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="FontFamily" Value="Segoe UI Variable Display Light"/>
+                    <Setter Property="FontSize" Value="25"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#3FFFFFFF"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#3FFFFFFF"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.Resources>
+                <Style TargetType="GridViewColumnHeader">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="FontFamily" Value="Segoe UI Variable Display Semibold"/>
+                    <Setter Property="FontSize" Value="25"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Padding" Value="10,5"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="GridViewColumnHeader">
+                                <Border Background="Transparent" BorderThickness="0">
+                                    <ContentPresenter HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          Margin="10,5"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+                <Style TargetType="ScrollViewer">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ScrollViewer">
+                                <ScrollContentPresenter/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.Resources>
+
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header=""    Width="280" DisplayMemberBinding="{Binding Jugador}"/>
+                    <GridViewColumn Header=""  Width="280" DisplayMemberBinding="{Binding Categoria}"/>
+                    <GridViewColumn Header=""   Width="280" DisplayMemberBinding="{Binding Aciertos}"/>
+                    <GridViewColumn Header="" Width="280" DisplayMemberBinding="{Binding Puntuacion}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
     </Grid>
 </UserControl>

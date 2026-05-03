@@ -60,6 +60,8 @@ namespace TriviaGame.ViewModels
             if (user != false)
             {
                 Message = "Login exitoso";
+                mainVM.jugadorActual = username;
+                mainVM.idJugadorActual = queryService.GetIdJugador(username);
                 mainVM.CurrentView = new mainMenuViewModel(a, b);
             }
             else

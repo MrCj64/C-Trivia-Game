@@ -74,7 +74,7 @@ namespace TriviaGame.Views
             try
             {
                 // Usamos el símbolo @ para poder usar las diagonales invertidas \ de Windows sin problemas
-                string rutaFisica = $@"C:\Users\atris\source\repos\MrCj64\C-Trivia-Game\TriviaGame\Views\Avatar\{numeroImagen}.png";
+                string rutaFisica = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "Avatar", $"{numeroImagen}.png");
 
                 // Obligamos a WPF a construir la imagen de forma estricta
                 BitmapImage bitmap = new BitmapImage();

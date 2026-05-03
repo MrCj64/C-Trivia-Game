@@ -18,8 +18,11 @@ namespace TriviaGame.ViewModels
 
         private int aciertosTotal = 0;
         private int erroresTotal = 0;
+        private int puntuacionTotal = 0;
         private string categoriaActual = "";
 
+        public string jugadorActual = "";   // <-- nuevo
+        public int idJugadorActual = -1;
 
         public object CurrentView
         {
@@ -38,7 +41,7 @@ namespace TriviaGame.ViewModels
             CurrentView = new loginViewModel(
                 this,
                 startGame: (categoryId) => selectedCategory(categoryId),
-                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu, categoriaActual, aciertosTotal, erroresTotal)
+                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
             );
 
         }
@@ -47,6 +50,7 @@ namespace TriviaGame.ViewModels
         {
             aciertosTotal = 0;
             erroresTotal = 0;
+            puntuacionTotal = 0;
 
             if (!int.TryParse(categoryId, out int idCategoria)) return;
 
@@ -81,6 +85,7 @@ namespace TriviaGame.ViewModels
 
                     pregunta.question = p["nomPregunta"].ToString();
                     pregunta.categoryId = idCategoria;
+                    pregunta.points = (int)p["puntuacionPregunta"];
                     pregunta.answers = respuestasRaw;
 
                     return pregunta;
@@ -94,7 +99,10 @@ namespace TriviaGame.ViewModels
         {
             if (index >= preguntas.Count)
             {
-                CurrentView = new finalScoreViewModel(IrAMenu, categoriaActual, aciertosTotal, erroresTotal);
+                if (idJugadorActual != -1)
+                    queryService.insertaPuntuacion(idJugadorActual, preguntas[0].categoryId, puntuacionTotal);
+
+                CurrentView = new finalScoreViewModel(IrAMenu);
                 return;
             }
 
@@ -102,9 +110,21 @@ namespace TriviaGame.ViewModels
             {
                 switch (CurrentView)
                 {
-                    case textGameViewModel vm: aciertosTotal += vm.Aciertos; erroresTotal += vm.Errores; break;
-                    case audioGameViewModel vm: aciertosTotal += vm.Aciertos; erroresTotal += vm.Errores; break;
-                    case ImageGameViewModel vm: aciertosTotal += vm.Aciertos; erroresTotal += vm.Errores; break;
+                    case textGameViewModel vm: 
+                        aciertosTotal += vm.Aciertos; 
+                        erroresTotal += vm.Errores;
+                        puntuacionTotal += vm.Puntuacion;
+                        break;
+                    case audioGameViewModel vm: 
+                        aciertosTotal += vm.Aciertos; 
+                        erroresTotal += vm.Errores;
+                        puntuacionTotal += vm.Puntuacion;
+                        break;
+                    case ImageGameViewModel vm: 
+                        aciertosTotal += vm.Aciertos; 
+                        erroresTotal += vm.Errores;
+                        puntuacionTotal += vm.Puntuacion;
+                        break;
                 }
                 MostrarPregunta(preguntas, index + 1);
             };
@@ -121,7 +141,7 @@ namespace TriviaGame.ViewModels
         {
             CurrentView = new mainMenuViewModel(
                 startGame: (categoryId) => selectedCategory(categoryId),
-                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu, categoriaActual, aciertosTotal, erroresTotal)
+                scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
             );
         }
     }
