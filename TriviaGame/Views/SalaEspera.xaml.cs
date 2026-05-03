@@ -26,7 +26,7 @@ namespace TriviaGame.Views
             Player2.Visibility = Visibility.Hidden;
             Player3.Visibility = Visibility.Hidden;
             Player4.Visibility = Visibility.Hidden;
-            //IniciarTemporizador();
+            IniciarTemporizador();
 
         }
 
