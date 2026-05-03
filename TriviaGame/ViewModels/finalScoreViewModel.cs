@@ -1,24 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
+using TriviaGame.Models;
+using TriviaGame.Services;
 
 namespace TriviaGame.ViewModels
 {
     public class finalScoreViewModel : propertiesChangesViewModel
     {
-        public RelayCommand VolverMenuCommand { get; }
-        public string Categoria { get; }
-        public int Aciertos { get; }
-        public int Errores { get; }
-        public int Puntuacion { get; }
+        private queryService queryService;
 
-        public finalScoreViewModel(Action volverAMenu, string categoria, int aciertos, int errores)
+        public RelayCommand menuPrinCommand { get; }
+        public ObservableCollection<scoreModel> Puntuaciones { get; } = new ObservableCollection<scoreModel>();
+
+        public finalScoreViewModel(Action volverAMenu)
         {
-            VolverMenuCommand = new RelayCommand(volverAMenu);
-            Categoria = categoria;
-            Aciertos = aciertos;
-            Errores = errores;
-            Puntuacion = aciertos * 10;
+            menuPrinCommand = new RelayCommand(volverAMenu);
+            queryService = new queryService();
+            CargarPuntuaciones();
+        }
+
+        private void CargarPuntuaciones()
+        {
+            var datos = queryService.GetPuntuaciones();
+            Puntuaciones.Clear();
+            foreach (var d in datos)
+            {
+                Puntuaciones.Add(new scoreModel
+                {
+                    Jugador = d["nombreJugador"].ToString(),
+                    Categoria = d["NombreCategoria"].ToString(),
+                    Puntuacion = (int)d["puntuacionTotal"],
+                    Aciertos = (int)d["puntuacionTotal"] / 10
+                });
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ namespace TriviaGame.Services
         {
             dataB = new MySqlService();
             conn = dataB.GetConnection();
-            conn.Open();
+             conn.Open();
         }
 
         public List<Dictionary<string, object>> GetPreguntas(int idCategoria)
@@ -66,7 +66,7 @@ namespace TriviaGame.Services
         public List<Dictionary<string, object>> GetJugadores()
         {
             List<Dictionary<string, object>> listaJugadores = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM jugadores", conn);
+            MySqlCommand cmd = new MySqlCommand("SELECT * FROM jugador", conn);
             MySqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -93,11 +93,10 @@ namespace TriviaGame.Services
             if (existe > 0)
                 return false;
 
-            string insertSql = @"INSERT INTO jugador (idJugador, nombreJugador, puntuacionTotal, password)
+            string insertSql = @"INSERT INTO jugador (idJugador, nombreJugador, password)
                                   VALUES (
                                     (SELECT IFNULL(MAX(j.idJugador), 0) + 1 FROM jugador j),
                                     @nombreJugador,
-                                    '0',
                                     @password
                                   )";
             MySqlCommand cmd = new MySqlCommand(insertSql, conn);
@@ -108,10 +107,14 @@ namespace TriviaGame.Services
             return filas > 0;
         }
 
-        public void insertaPuntuacion(int idJugador, int puntuacion)
+        public void insertaPuntuacion(int idJugador, int idCategoria, int puntuacion)
         {
-            MySqlCommand cmd = new MySqlCommand("INSERT INTO jugador (idJugador, puntuacionTotal) VALUES (@id, @puntuacion) ON DUPLICATE KEY UPDATE puntuacionTotal = puntuacionTotal + @puntuacion", conn);
+            MySqlCommand cmd = new MySqlCommand(
+                @"INSERT INTO puntuacion (IdJugador, IdCategoria, puntuacionTotal) 
+          VALUES (@id, @idCategoria, @puntuacion) 
+          ON DUPLICATE KEY UPDATE puntuacionTotal = puntuacionTotal + @puntuacion", conn);
             cmd.Parameters.AddWithValue("@id", idJugador);
+            cmd.Parameters.AddWithValue("@idCategoria", idCategoria);
             cmd.Parameters.AddWithValue("@puntuacion", puntuacion);
             cmd.ExecuteNonQuery();
         }
@@ -138,6 +141,39 @@ namespace TriviaGame.Services
             object result = cmd.ExecuteScalar();
             return result != null ? result.ToString() : $"Categoría {idCategoria}";
         }
+        public int GetIdJugador(string nombreJugador)
+        {
+            MySqlCommand cmd = new MySqlCommand(
+                "SELECT idJugador FROM jugador WHERE nombreJugador = @nombre", conn);
+            cmd.Parameters.AddWithValue("@nombre", nombreJugador);
+            object result = cmd.ExecuteScalar();
+            return result != null ? Convert.ToInt32(result) : -1;
+        }
+
+        public List<Dictionary<string, object>> GetPuntuaciones()
+        {
+            List<Dictionary<string, object>> lista = new List<Dictionary<string, object>>();
+            MySqlCommand cmd = new MySqlCommand(
+                @"SELECT j.nombreJugador, c.NombreCategoria, p.puntuacionTotal
+          FROM puntuacion p
+          INNER JOIN jugador j ON j.idJugador = p.IdJugador
+          INNER JOIN categoria c ON c.idCategoria = p.IdCategoria
+          ORDER BY p.puntuacionTotal DESC", conn);
+
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                lista.Add(new Dictionary<string, object>
+        {
+            { "nombreJugador",   reader.GetString("nombreJugador")   },
+            { "NombreCategoria", reader.GetString("NombreCategoria") },
+            { "puntuacionTotal", reader.GetInt32("puntuacionTotal")  }
+        });
+            }
+            reader.Close();
+            return lista;
+        }
 
     }
+
 }

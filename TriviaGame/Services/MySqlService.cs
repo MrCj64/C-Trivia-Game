@@ -12,7 +12,7 @@ namespace TriviaGame.Services
         private string myConnectionString = "Server=127.0.0.1;" +
                                             "Database=trivia_game_db;" +
                                             "User ID =root;" +
-                                            "Password=Root12345678;";
+                                            "Password=2005;";
         MySqlConnection myConnection;
         public MySqlConnection GetConnection()
         {
