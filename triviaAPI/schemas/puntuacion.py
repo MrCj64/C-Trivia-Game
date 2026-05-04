@@ -5,3 +5,8 @@ class Puntuacion(BaseModel):
         puntuacionTotal : int
         IdJugador : Optional[int] = None
         IdCategoria : Optional[int] = None
+
+class PuntuacionRanking(BaseModel):
+        nombreJugador: str
+        NombreCategoria: str
+        puntuacionTotal : int

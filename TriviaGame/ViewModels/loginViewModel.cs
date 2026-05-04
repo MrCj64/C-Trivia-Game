@@ -52,16 +52,16 @@ namespace TriviaGame.ViewModels
             InsertaJugador = new RelayCommand(Insertar);
         }
 
-        public void Login()
+        public async void Login()
         {
 
-            bool user = queryService.LoginJugador(username, password);
+            bool user = await queryService.LoginJugador(username, password);
 
             if (user != false)
             {
                 Message = "Login exitoso";
                 mainVM.jugadorActual = username;
-                mainVM.idJugadorActual = queryService.GetIdJugador(username);
+                mainVM.idJugadorActual = await queryService.GetIdJugador(username);
                 mainVM.CurrentView = new mainMenuViewModel(a, b);
             }
             else
@@ -70,10 +70,10 @@ namespace TriviaGame.ViewModels
             }
         }
 
-        public void Insertar()
+        public async void Insertar()
         {
 
-            bool success = queryService.insertaJugador(Username, password);
+            bool success = await queryService.insertaJugador(Username, password);
 
             if (success)
                 Message = "Usuario registrado exitosamente";

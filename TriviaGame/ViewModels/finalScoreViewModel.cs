@@ -21,9 +21,9 @@ namespace TriviaGame.ViewModels
             CargarPuntuaciones();
         }
 
-        private void CargarPuntuaciones()
+        private async void CargarPuntuaciones()
         {
-            var datos = queryService.GetPuntuaciones();
+            var datos = await queryService.GetPuntuaciones();
             Puntuaciones.Clear();
             foreach (var d in datos)
             {
