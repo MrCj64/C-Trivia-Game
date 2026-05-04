@@ -23,13 +23,6 @@ namespace TriviaGame.Views
             InitializeComponent();
         }
 
-        private void Sala_Click(object sender, RoutedEventArgs e)
-        {
-            SalaEspera vistaSalaEspera = new SalaEspera();
-            vistaSalaEspera.Show();
-            vistaSalaEspera.Focus();
-        }
-
         private void Score_Click(object sender, RoutedEventArgs e)
         {
             Score vistaScore = new Score();

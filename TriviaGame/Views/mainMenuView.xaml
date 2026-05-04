@@ -432,7 +432,6 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button x:Name="Sala" Content="Sala de espera" HorizontalAlignment="Left" Margin="828,140,0,0" VerticalAlignment="Top" Height="92" Width="193" FontSize="22" RenderTransformOrigin="-0.184,0.634" Click="Sala_Click"/>
         <Button x:Name="Score" Content="Score" HorizontalAlignment="Left" Margin="924,257,0,0" VerticalAlignment="Top" FontSize="36" Height="103" Width="129" Click="Score_Click"/>
     </Grid>
 </UserControl>

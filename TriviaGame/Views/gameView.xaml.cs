@@ -46,7 +46,6 @@ namespace TriviaGame.Views
             else
             {
                 _timer.Stop(); 
-                ventana.Show();
             }
         }
 
