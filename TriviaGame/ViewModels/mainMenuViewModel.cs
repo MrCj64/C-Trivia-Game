@@ -10,12 +10,12 @@ namespace TriviaGame.ViewModels
         public RelayCommand startGameCommand { get; set; }
         public RelayCommand scoreMenuCommand { get; set; }
 
-        public mainMenuViewModel(Action<String> startGame, Action scoreMenu)
+        public mainMenuViewModel(Func<String, Task> startGame, Action scoreMenu)
         {
-            startGameCommand = new RelayCommand((obj) =>
+            startGameCommand = new RelayCommand(async (obj) =>
             {
                 string category = obj as string;
-                startGame(category);
+                await startGame(category);
             });
 
             scoreMenuCommand = new RelayCommand(scoreMenu);

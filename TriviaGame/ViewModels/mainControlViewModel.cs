@@ -40,13 +40,12 @@ namespace TriviaGame.ViewModels
             random = new Random();
             CurrentView = new loginViewModel(
                 this,
-                startGame: (categoryId) => selectedCategory(categoryId),
+                startGame: async (categoryId) => await selectedCategory(categoryId), 
                 scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
             );
-
         }
 
-        public void selectedCategory(string categoryId)
+        public async Task selectedCategory(string categoryId)
         {
             aciertosTotal = 0;
             erroresTotal = 0;
@@ -54,43 +53,47 @@ namespace TriviaGame.ViewModels
 
             if (!int.TryParse(categoryId, out int idCategoria)) return;
 
-            categoriaActual = queryService.GetNombreCategoria(idCategoria);
+            categoriaActual = await queryService.GetNombreCategoria(idCategoria);
 
-            var preguntasRaw = queryService.GetPreguntas(idCategoria);
-            if (preguntasRaw.Count == 0) return;
+            var preguntasRaw = await queryService.GetPreguntas(idCategoria);
+            if (preguntasRaw == null || preguntasRaw.Count == 0) return;
 
-            var preguntas = preguntasRaw
-                .OrderBy(_ => random.Next())
-                .Select(p =>
-                {
-                    var respuestasRaw = queryService.GetRespuestas((int)p["idPregunta"])
-                        .OrderBy(_ => random.Next())
-                        .Select(r => new answerModel
-                        {
-                            answer = r["textRespuesta"]?.ToString() ?? "",
-                            isCorrect = (bool)r["EsCorrecta"],
-                            mediaPath = r["rutaRespuesta"]?.ToString() ?? "",
-                            answerType = r["tipoRespuesta"]?.ToString() ?? "TEXT"
-                        })
-                        .ToList();
+            var preguntas = new List<questionModel>();
 
-                    string tipo = respuestasRaw.FirstOrDefault()?.answerType?.ToUpper() ?? "TEXT";
+            foreach (var p in preguntasRaw.OrderBy(_ => random.Next()))
+            {
 
-                    questionModel pregunta = tipo switch
+                var respuestasRaw = await queryService.GetRespuestas(Convert.ToInt32(p["idPregunta"]));
+
+                if (respuestasRaw == null) continue;
+
+                var respuestas = respuestasRaw
+                    .OrderBy(_ => random.Next())
+                    .Select(r => new answerModel
                     {
-                        "SOUND" => new audioQuestionModel { pathAudio = respuestasRaw.FirstOrDefault()?.mediaPath },
-                        "IMG" => new imageQuestionModel { pathImage = respuestasRaw.FirstOrDefault()?.mediaPath },
-                        _ => new textQuestionModel()
-                    };
+                        answer = r["textRespuesta"]?.ToString() ?? "",
+                        isCorrect = Convert.ToBoolean(r["EsCorrecta"]),
+                        mediaPath = r["rutaRespuesta"]?.ToString() ?? "",
+                        answerType = r["tipoRespuesta"]?.ToString() ?? "TEXT"
+                    })
+                    .ToList();
 
-                    pregunta.question = p["nomPregunta"].ToString();
-                    pregunta.categoryId = idCategoria;
-                    pregunta.points = (int)p["puntuacionPregunta"];
-                    pregunta.answers = respuestasRaw;
+                string tipo = respuestas.FirstOrDefault()?.answerType?.ToUpper() ?? "TEXT";
 
-                    return pregunta;
-                })
-                .ToList();
+                questionModel pregunta = tipo switch
+                {
+                    "SOUND" => new audioQuestionModel { pathAudio = respuestas.FirstOrDefault()?.mediaPath },
+                    "IMG" => new imageQuestionModel { pathImage = respuestas.FirstOrDefault()?.mediaPath },
+                    _ => new textQuestionModel()
+                };
+
+                pregunta.question = p["nomPregunta"].ToString();
+                pregunta.categoryId = idCategoria;
+                pregunta.points = Convert.ToInt32(p["puntuacionPregunta"]);
+                pregunta.answers = respuestas;
+
+                preguntas.Add(pregunta);
+            }
 
             MostrarPregunta(preguntas, 0);
         }
@@ -140,7 +143,7 @@ namespace TriviaGame.ViewModels
         public void IrAMenu()
         {
             CurrentView = new mainMenuViewModel(
-                startGame: (categoryId) => selectedCategory(categoryId),
+                startGame: async (categoryId) => await selectedCategory(categoryId),
                 scoreMenu: () => CurrentView = new finalScoreViewModel(IrAMenu)
             );
         }
