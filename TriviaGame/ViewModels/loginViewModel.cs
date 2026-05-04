@@ -19,7 +19,7 @@ namespace TriviaGame.ViewModels
         private mainControlViewModel mainVM;
         private queryService queryService;
 
-        Action<String> a;
+        Func<String, Task> a;
         Action b;
         public string Username
         {
@@ -41,7 +41,7 @@ namespace TriviaGame.ViewModels
         public ICommand LoginCommand { get; }
         public ICommand InsertaJugador { get; }
 
-        public loginViewModel(mainControlViewModel mainVM, Action<String> startGame, Action scoreMenu)
+        public loginViewModel(mainControlViewModel mainVM, Func<String, Task>startGame, Action scoreMenu)
         {
             a = startGame;
             b = scoreMenu;

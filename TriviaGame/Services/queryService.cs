@@ -4,85 +4,100 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json;
 
 namespace TriviaGame.Services
 {
     //Clase para implementar la logica de las consultas a la base de datos
     internal class queryService
     {
+        private MySqlService dataAPIconn;
         private MySqlService dataB;
         private MySqlConnection conn;
+        private readonly HttpClient client;
+        private readonly string base_url;
         public queryService()
         {
+            dataAPIconn = new MySqlService();
+            client = dataAPIconn.getClient();
+            base_url = dataAPIconn.getBaseUrl();
             dataB = new MySqlService();
             conn = dataB.GetConnection();
-             conn.Open();
+            conn.Open();
         }
 
-        public List<Dictionary<string, object>> GetPreguntas(int idCategoria)
+        public async Task<List<Dictionary<string, object>>> GetPreguntas(int idCategoria)
         {
-            List<Dictionary<string, object>> listaPreguntas = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM pregunta WHERE idCategoria = @idCategoria", conn);
-            cmd.Parameters.AddWithValue("@idCategoria", idCategoria);
-            MySqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                Dictionary<string, object> pregunta = new Dictionary<string, object>
-                {
-                    { "idPregunta",             reader.GetInt32("idPregunta"        )},
-                    { "puntuacionPregunta",     reader.GetInt32("puntuacionPregunta")},
-                    { "nomPregunta",            reader.GetString("nomPregunta"      )},
-                    { "idCategoria",            reader.GetInt32("idCategoria"       )}
-                };
-                listaPreguntas.Add(pregunta);
-            }
-            reader.Close();
-            return listaPreguntas;
-        }
+            try { 
+                List<Dictionary<string, object>> listaPreguntas;
+                HttpResponseMessage response = await client.GetAsync($"{base_url}/pregunta/{idCategoria}");
+                response.EnsureSuccessStatusCode();
+                string preguntasJson = await response.Content.ReadAsStringAsync();
 
-        public List<Dictionary<string, object>> GetRespuestas(int idPregunta)
+                listaPreguntas = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(preguntasJson);
+                return listaPreguntas;
+            }
+            catch(Exception e)
+            {
+                return null;
+            }
+
+        } 
+
+        public async Task<List<Dictionary<string, object>>> GetRespuestas(int idPregunta)
         {
-            List<Dictionary<string, object>> listaRespuestas = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM respuesta WHERE idPregunta = @idPregunta", conn);
-            cmd.Parameters.AddWithValue("@idPregunta", idPregunta);
-            MySqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                Dictionary<string, object> respuesta = new Dictionary<string, object>
-                {
-                    { "idRespuesta",            reader.GetInt32("idRespuesta"   )},
-                    { "idPregunta",             reader.GetInt32("idPregunta"    )},
-                    { "textRespuesta",          reader.IsDBNull(reader.GetOrdinal("textRespuesta")) ? null : reader.GetString("textRespuesta")},
-                    { "EsCorrecta",             reader.GetBoolean("EsCorrecta"  )},
-                    { "tipoRespuesta",          reader.IsDBNull(reader.GetOrdinal("tipoRespuesta")) ? null : reader.GetString("tipoRespuesta")},
-                    { "rutaRespuesta",          reader.IsDBNull(reader.GetOrdinal("rutaRespuesta")) ? null : reader.GetString("rutaRespuesta")},
-                };
-                listaRespuestas.Add(respuesta);
+                List<Dictionary<string, object>> listaRespuestas;
+                HttpResponseMessage response = await client.GetAsync($"{base_url}/respuesta/{idPregunta}");
+                response.EnsureSuccessStatusCode();
+                string respuestasJson = await response.Content.ReadAsStringAsync();
+
+                listaRespuestas = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(respuestasJson);
+                return listaRespuestas;
             }
-            reader.Close();
-            return listaRespuestas;
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
-        public List<Dictionary<string, object>> GetJugadores()
+        public async Task<List<Dictionary<string, object>>> GetJugadores()
         {
-            List<Dictionary<string, object>> listaJugadores = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM jugador", conn);
-            MySqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                Dictionary<string, object> jugadores = new Dictionary<string, object>
-                {
-                    { "idJugador",                reader.GetInt32("idJugador"        )},
-                    { "nombreJugador",            reader.GetString("nombreJugador"    )},
-                    { "password",                 reader.GetString("password"        )}
-                };
+                List<Dictionary<string, object>> listaJugadores;
+                HttpResponseMessage response = await client.GetAsync($"{base_url}/jugador");
+                response.EnsureSuccessStatusCode();
+                string jugadoresJson = await response.Content.ReadAsStringAsync();
 
-                listaJugadores.Add(jugadores);
+                listaJugadores = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jugadoresJson);
+                return listaJugadores;
             }
-            reader.Close();
-            return listaJugadores;
+            catch (Exception e)
+            {
+                return null;
+            }
         }
+        public async Task<string> GetNombreCategoria(int idCategoria)
+        {
+            try
+            {
+                string categorias;
+                HttpResponseMessage response = await client.GetAsync($"{base_url}/pregunta/{idCategoria}");
+                response.EnsureSuccessStatusCode();
+                string categoriasJson = await response.Content.ReadAsStringAsync();
 
+                categorias = JsonConvert.DeserializeObject<string>(categoriasJson);
+                return categorias;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
         public bool insertaJugador(string nombreJugador, string password)
         {
             string checkSql = "SELECT COUNT(*) FROM jugador WHERE NombreJugador = @nombreJugador";
@@ -133,14 +148,8 @@ namespace TriviaGame.Services
 
             return count > 0;
         }
-        public string GetNombreCategoria(int idCategoria)
-        {
-            MySqlCommand cmd = new MySqlCommand(
-                "SELECT NombreCategoria FROM categoria WHERE idCategoria = @id", conn);
-            cmd.Parameters.AddWithValue("@id", idCategoria);
-            object result = cmd.ExecuteScalar();
-            return result != null ? result.ToString() : $"Categoría {idCategoria}";
-        }
+
+
         public int GetIdJugador(string nombreJugador)
         {
             MySqlCommand cmd = new MySqlCommand(
