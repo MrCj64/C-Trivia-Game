@@ -2,7 +2,7 @@ import socket
 import threading
 import json
 from datetime import datetime
-
+import time
 
 salas = {}
 salas_lock = threading.Lock()
@@ -17,6 +17,7 @@ class Room:
         self.created_at = datetime.now()
         self.is_active = True
         self.game_started = False
+        self.start_timer = None  # Timer para inicio automático
 
     def add_player(self, player_info):
         if len(self.players) < self.max_players:
@@ -57,14 +58,17 @@ def handle_client(client_socket, addr):
             action = request_data.get("action")
 
             if action == "join_room":
-                room_id = request_data.get("room_id")
+                # **CAMBIO CLAVE: Generar room_id basado en categoría**
                 category = request_data.get("category")
+                room_id = f"room_{category}"  # Todos en misma categoría = misma sala
+                
                 player_name = request_data.get("player_name")
                 avatar_id = request_data.get("avatar", 0)
 
                 with salas_lock:
                     if room_id not in salas:
                         salas[room_id] = Room(room_id, category)
+                        print(f"[{datetime.now()}] Nueva sala creada: {room_id} para categoría {category}")
 
                     room = salas[room_id]
 
@@ -80,13 +84,22 @@ def handle_client(client_socket, addr):
                         response = {
                             'status': 'success',
                             'message': f'{player_name} se ha unido a la sala',
-                            'room_info': room.to_dict()
+                            'room_info': room.to_dict(),
+                            'room_id': room_id  # Enviar el room_id correcto
                         }
-                        print(f"[{datetime.now()}] {player_name} se unió a sala {room_id}. Total jugadores: {room.get_player_count()}")
+                        print(f"[{datetime.now()}] {player_name} se unió a sala {room_id}. Total jugadores: {room.get_player_count()}/{room.max_players}")
 
+                        # Broadcast a todos los jugadores
                         broadcast_room_status(room, room_id)
 
-                        if room.is_full():
+                        # Si es el primer jugador, iniciar timer de 20 segundos
+                        if room.get_player_count() == 1 and not room.game_started:
+                            start_room_timer(room, room_id)
+
+                        # Si la sala está llena, iniciar inmediatamente
+                        if room.is_full() and not room.game_started:
+                            if room.start_timer:
+                                room.start_timer.cancel()
                             broadcast_game_start(room, room_id)
                     else:
                         response = {
@@ -106,8 +119,16 @@ def handle_client(client_socket, addr):
             with salas_lock:
                 if room_id in salas:
                     salas[room_id].remove_player(player_name)
+                    
+                    # Si la sala queda vacía, eliminarla
                     if salas[room_id].get_player_count() == 0:
+                        if salas[room_id].start_timer:
+                            salas[room_id].start_timer.cancel()
                         del salas[room_id]
+                        print(f"[{datetime.now()}] Sala {room_id} eliminada (vacía)")
+                    else:
+                        # Notificar a los jugadores restantes
+                        broadcast_room_status(salas[room_id], room_id)
 
             if player_name in client_sockets:
                 del client_sockets[player_name]
@@ -115,39 +136,61 @@ def handle_client(client_socket, addr):
         client_socket.close()
         print(f"[{datetime.now()}] Conexión cerrada con {addr[0]}:{addr[1]}")
 
+def start_room_timer(room, room_id):
+    """Inicia un timer de 20 segundos para iniciar el juego automáticamente"""
+    def timeout_start():
+        with salas_lock:
+            if room_id in salas and not salas[room_id].game_started:
+                print(f"[{datetime.now()}] Timer expirado para sala {room_id}. Iniciando juego con {salas[room_id].get_player_count()} jugadores")
+                broadcast_game_start(salas[room_id], room_id)
+    
+    room.start_timer = threading.Timer(20.0, timeout_start)
+    room.start_timer.daemon = True
+    room.start_timer.start()
+    print(f"[{datetime.now()}] Timer de 20 segundos iniciado para sala {room_id}")
+
 def broadcast_room_status(room, room_id):
+    """Envía actualización del estado de la sala a todos los jugadores"""
     message = {
         'action': 'room_status',
         'room_info': room.to_dict()
     }
     message_json = json.dumps(message).encode("utf-8")
+    
     for player in room.players:
         player_name = player['name']
         if player_name in client_sockets:
             try:
                 client_sockets[player_name].send(message_json)
             except Exception as e:
-                pass
+                print(f"[{datetime.now()}] Error enviando room_status a {player_name}: {e}")
 
 def broadcast_game_start(room, room_id):
-    """Envía mensaje de inicio de juego a todos los jugadores de la sala"""
+    """Envía mensaje de inicio de juego sincronizado a todos los jugadores"""
+    if room.game_started:
+        return
+        
+    room.game_started = True
+    
     print(f"[{datetime.now()}] broadcast_game_start() llamado para sala {room_id}")
     print(f"[{datetime.now()}] Jugadores en sala: {len(room.players)}")
-    print(f"[{datetime.now()}] client_sockets disponibles: {list(client_sockets.keys())}")
+
+    start_timestamp = time.time() + 3.0
 
     game_start_message = {
         'action': 'game_start',
         'room_id': room_id,
         'players': room.players,
         'player_count': room.get_player_count(),
-        'category': room.category
+        'category': room.category,
+        'start_timestamp': start_timestamp,
+        'countdown': 20
     }
 
     message_json = json.dumps(game_start_message).encode("utf-8")
 
     for player in room.players:
         player_name = player['name']
-        print(f"[{datetime.now()}] Buscando socket para jugador: {player_name}")
         if player_name in client_sockets:
             try:
                 client_sockets[player_name].send(message_json)
@@ -157,7 +200,6 @@ def broadcast_game_start(room, room_id):
         else:
             print(f"[{datetime.now()}] Socket no encontrado para {player_name}")
 
-    room.game_started = True
     print(f"[{datetime.now()}] Juego iniciado en sala {room_id} con {room.get_player_count()} jugadores")
 
 def run_server():

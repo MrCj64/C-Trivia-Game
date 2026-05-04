@@ -18,7 +18,6 @@ namespace TriviaGame.Views
         int _tiempoRestante = 20;
         int _jugadoresConectados = 0;
         Random _random = new Random();
-        List<int> _avataresUsados = new List<int>();
 
         private SocketClientService _socketClient = new SocketClientService();
         private string _roomId;
@@ -35,7 +34,9 @@ namespace TriviaGame.Views
 
             _category = categoria;
             _playerName = nombreJugador;
-            _roomId = Guid.NewGuid().ToString().Substring(0, 8);
+
+            _roomId = $"room_{categoria}";
+
             _onGameStartCallback = onGameStart;
 
             Player1.Visibility = Visibility.Hidden;
@@ -43,10 +44,7 @@ namespace TriviaGame.Views
             Player3.Visibility = Visibility.Hidden;
             Player4.Visibility = Visibility.Hidden;
 
-            // Conectar socket y unirse a la sala
             _ = ConectarYUnirseASalaAsync();
-
-            IniciarTemporizador();
         }
 
         private void IniciarTemporizador()
@@ -56,7 +54,7 @@ namespace TriviaGame.Views
             _timer.Interval = TimeSpan.FromSeconds(1);
             _timer.Tick += Timer_Tick;
             _timer.Start();
-            // Mostrar el valor inicial inmediatamente
+
             if (Timer != null)
                 Timer.Content = _tiempoRestante.ToString();
         }
@@ -77,23 +75,7 @@ namespace TriviaGame.Views
 
                 if (!_gameStarting)
                 {
-                    _gameStarting = true;
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Timer llegó a 0, invocando callback");
-
-                    // Invocar el callback de forma asíncrona sin bloquear el dispatcher
-                    Dispatcher.InvokeAsync(async () =>
-                    {
-                        try
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Ejecutando callback del timer");
-                            await (_onGameStartCallback?.Invoke() ?? Task.CompletedTask);
-                            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Callback del timer completado");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error en callback: {ex.Message}\n{ex.StackTrace}");
-                        }
-                    });
+                    IniciarJuego();
                 }
             }
         }
@@ -104,22 +86,32 @@ namespace TriviaGame.Views
             {
                 System.Diagnostics.Debug.WriteLine($"[SalaEspera] Iniciando conexión al servidor...");
 
-                // Conectar al servidor
                 if (await _socketClient.ConnectAsync())
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Conectado al servidor. Uniéndose a sala...");
+                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Conectado al servidor. Uniéndose a sala {_roomId}...");
                     _socketClient.OnMessageReceived += SocketClient_OnMessageReceived;
                     _socketClient.OnGameStarted += SocketClient_OnGameStarted;
 
-                    // Seleccionar un avatar aleatorio
                     _avatarId = _random.Next(1, 5);
 
-                    // Unirse a la sala
                     string response = await _socketClient.JoinRoomAsync(_roomId, _category, _playerName, _avatarId);
                     System.Diagnostics.Debug.WriteLine($"[SalaEspera] Respuesta de unirse a sala: {response}");
 
-                    _socketConnected = true;
-                    MostrarJugador(0, _playerName, _avatarId);
+                    var responseObj = JsonSerializer.Deserialize<Dictionary<string, object>>(response);
+                    if (responseObj != null && responseObj.ContainsKey("status"))
+                    {
+                        if (responseObj["status"].ToString() == "success")
+                        {
+                            _socketConnected = true;
+
+                            // Iniciar temporizador solo después de unirse exitosamente
+                            Dispatcher.Invoke(() => IniciarTemporizador());
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error al unirse: {responseObj.GetValueOrDefault("message", "Error desconocido")}");
+                        }
+                    }
                 }
                 else
                 {
@@ -138,8 +130,8 @@ namespace TriviaGame.Views
             {
                 System.Diagnostics.Debug.WriteLine($"[SalaEspera] Mensaje recibido: {message}");
 
-                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var response = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(message, options);
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var response = JsonSerializer.Deserialize<Dictionary<string, object>>(message, options);
 
                 if (response != null && response.ContainsKey("action"))
                 {
@@ -160,22 +152,35 @@ namespace TriviaGame.Views
 
         private void SocketClient_OnGameStarted(object sender, GameStartEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Evento game_started recibido");
-            Dispatcher.InvokeAsync(async () =>
+            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Evento game_started recibido del servidor");
+            Dispatcher.InvokeAsync(() =>
             {
                 if (!_gameStarting)
                 {
-                    _gameStarting = true;
-                    _timer.Stop();
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Socket game_started, invocando callback");
-                    try
-                    {
-                        await (_onGameStartCallback?.Invoke() ?? Task.CompletedTask);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error en callback de game_started: {ex.Message}");
-                    }
+                    IniciarJuego();
+                }
+            });
+        }
+
+        private void IniciarJuego()
+        {
+            if (_gameStarting) return;
+
+            _gameStarting = true;
+            _timer?.Stop();
+
+            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Iniciando juego...");
+
+            Dispatcher.InvokeAsync(async () =>
+            {
+                try
+                {
+                    await (_onGameStartCallback?.Invoke() ?? Task.CompletedTask);
+                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Callback completado");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error en callback: {ex.Message}");
                 }
             });
         }
@@ -184,8 +189,8 @@ namespace TriviaGame.Views
         {
             try
             {
-                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                using (var doc = System.Text.Json.JsonDocument.Parse(message))
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                using (var doc = JsonDocument.Parse(message))
                 {
                     var root = doc.RootElement;
 
@@ -193,7 +198,7 @@ namespace TriviaGame.Views
                     {
                         if (roomInfoElement.TryGetProperty("players", out JsonElement playersElement))
                         {
-                            var players = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(
+                            var players = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(
                                 playersElement.GetRawText(), options);
 
                             if (players != null)
@@ -203,6 +208,7 @@ namespace TriviaGame.Views
 
                                 Dispatcher.Invoke(() =>
                                 {
+ 
                                     for (int i = 0; i < 4; i++)
                                     {
                                         OcultarJugador(i);
