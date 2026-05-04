@@ -16,9 +16,9 @@ namespace TriviaGame.Services
         private const string base_url = "http://127.0.0.1:8000";
 
         private string myConnectionString = "Server=127.0.0.1;" +
-                                            "Database=tiviagamebd;" +
+                                            "Database=triviagamebd;" +
                                             "User ID =root;" +
-                                            "Password=123;";
+                                            "Password=root;";
         MySqlConnection myConnection;
         public MySqlConnection GetConnection()
         {
