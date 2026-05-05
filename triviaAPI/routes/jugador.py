@@ -17,27 +17,28 @@ def verificar_Jugador(nombreJugador: str):
     with engine.connect() as conn:
         login_result = conn.execute(select(func.count()).select_from(jugadores).
                                     where(jugadores.c.nombreJugador == nombreJugador)).scalar()
-        return login_result > 0
+        return login_result 
 
 @jugador.post("/jugador", tags=["jugadores"])
 def create_jugador(j: Jugador):
     with engine.connect() as conn:
-        
-        if verificar_Jugador(j.nombreJugador) > 0: return { "message" : "Existe"}
+        count = conn.execute(
+            select(func.count()).select_from(jugadores)
+            .where(jugadores.c.nombreJugador == j.nombreJugador)
+        ).scalar()
+        if count > 0:
+            return {"message": "Existe"}
         
         max_id = conn.execute(
             select(func.ifnull(func.max(jugadores.c.idJugador), 0))
         ).scalar()
         
-        nuevo_id = max_id + 1
-
         result = conn.execute(jugadores.insert().values(
-            idJugador=nuevo_id,
+            idJugador=max_id + 1,
             nombreJugador=j.nombreJugador,
             password=j.password
         ))
         conn.commit()
-
         return result.lastrowid
 
 @jugador.get("/jugador/login", tags=["jugadores"])

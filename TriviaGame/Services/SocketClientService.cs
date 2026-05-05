@@ -26,7 +26,7 @@ namespace TriviaGame.Services
         public event EventHandler<string> OnConnectionStatusChanged;
         public event EventHandler<GameStartEventArgs> OnGameStarted;
 
-        public SocketClientService(string serverIp = "10.103.150.76", int serverPort = 50000)
+        public SocketClientService(string serverIp = "192.168.0.226", int serverPort = 50000)
         {
             _serverIp = serverIp;
             _serverPort = serverPort;
@@ -36,8 +36,20 @@ namespace TriviaGame.Services
 
         public async Task<bool> ConnectAsync()
         {
+            if (_isConnected && _client != null && _client.Connected)
+            {
+                OnConnectionStatusChanged?.Invoke(this, "Ya existe una conexión activa");
+                return true;
+            }
+
+            if (_client != null && _client.Connected)
+            {
+                await DisconnectAsync();
+            }
+
             try
             {
+                _client = new TcpClient();
                 var connectTask = _client.ConnectAsync(_serverIp, _serverPort);
                 var timeoutTask = Task.Delay(5000);
 
@@ -56,7 +68,7 @@ namespace TriviaGame.Services
                 _cancellationTokenSource = new CancellationTokenSource();
                 _listenerTask = Task.Run(() => ListenToMessagesAsync(_cancellationTokenSource.Token));
                 OnConnectionStatusChanged?.Invoke(this, "Conectado al servidor");
-                System.Diagnostics.Debug.WriteLine($"Conectado exitosamente a {_serverIp}:{_serverPort}");
+
                 return true;
             }
             catch (Exception ex)
@@ -64,7 +76,6 @@ namespace TriviaGame.Services
                 _isConnected = false;
                 _client?.Dispose();
                 _client = new TcpClient();
-                System.Diagnostics.Debug.WriteLine($"Error de conexión: {ex.Message}");
                 OnConnectionStatusChanged?.Invoke(this, $"Error al conectar: {ex.Message}");
                 return false;
             }
@@ -96,11 +107,9 @@ namespace TriviaGame.Services
                         if (response != null && response.ContainsKey("action"))
                         {
                             string action = response["action"].ToString();
-                            System.Diagnostics.Debug.WriteLine($"[ListenToMessagesAsync] Acción recibida: {action}");
 
                             if (action == "game_start")
                             {
-                                System.Diagnostics.Debug.WriteLine($"[ListenToMessagesAsync] Evento game_start recibido!");
                                 var eventArgs = new GameStartEventArgs();
                                 OnGameStarted?.Invoke(this, eventArgs);
                             }
@@ -135,24 +144,19 @@ namespace TriviaGame.Services
                 await _stream.WriteAsync(data, 0, data.Length);
                 await _stream.FlushAsync();
 
-                System.Diagnostics.Debug.WriteLine($"Solicitud de unirse a sala enviada: {jsonRequest}");
-
                 var timeoutTask = Task.Delay(5000);
                 var completedTask = await Task.WhenAny(_joinResponseTcs.Task, timeoutTask);
 
                 if (completedTask == _joinResponseTcs.Task)
                 {
                     string response = await _joinResponseTcs.Task;
-                    System.Diagnostics.Debug.WriteLine($"Respuesta recibida: {response}");
                     return response;
                 }
 
-                System.Diagnostics.Debug.WriteLine("Timeout esperando respuesta del servidor");
                 return "{\"status\":\"error\",\"message\":\"Timeout - No se recibió respuesta del servidor\"}";
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error en JoinRoomAsync: {ex.Message}");
                 return "{\"status\":\"error\",\"message\":\"" + ex.Message + "\"}";
             }
         }
@@ -161,7 +165,6 @@ namespace TriviaGame.Services
         {
             if (!_isConnected || _stream == null)
             {
-                System.Diagnostics.Debug.WriteLine("Error: No hay conexión activa para iniciar juego");
                 return false;
             }
 
@@ -173,12 +176,10 @@ namespace TriviaGame.Services
                 await _stream.WriteAsync(data, 0, data.Length);
                 await _stream.FlushAsync();
 
-                System.Diagnostics.Debug.WriteLine($"Solicitud de inicio de juego enviada para sala: {roomId}");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error al iniciar juego: {ex.Message}");
                 return false;
             }
         }
@@ -202,29 +203,52 @@ namespace TriviaGame.Services
 
         public async Task<bool> DisconnectAsync()
         {
+            if (!_isConnected && _client == null)
+            {
+                return true;
+            }
+
             try
             {
                 _isConnected = false;
-                _cancellationTokenSource.Cancel();
 
-                var request = new { action = "close" };
-                string jsonRequest = JsonSerializer.Serialize(request);
-                byte[] data = Encoding.UTF8.GetBytes(jsonRequest);
+                if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+                {
+                    _cancellationTokenSource.Cancel();
+                }
 
-                await _stream.WriteAsync(data, 0, data.Length);
-                await _stream.FlushAsync();
+                if (_stream != null && _client != null && _client.Connected)
+                {
+                    try
+                    {
+                        var request = new { action = "close" };
+                        string jsonRequest = JsonSerializer.Serialize(request);
+                        byte[] data = Encoding.UTF8.GetBytes(jsonRequest);
+
+                        await _stream.WriteAsync(data, 0, data.Length);
+                        await _stream.FlushAsync();
+                    }
+                    catch
+                    {
+                    }
+                }
 
                 if (_listenerTask != null)
                 {
                     try
                     {
-                        await _listenerTask;
+                        await Task.WhenAny(_listenerTask, Task.Delay(1000));
                     }
                     catch { }
                 }
 
                 _stream?.Dispose();
+                _stream = null;
+
+                _client?.Close();
                 _client?.Dispose();
+                _client = null;
+
                 OnConnectionStatusChanged?.Invoke(this, "Desconectado del servidor");
                 return true;
             }

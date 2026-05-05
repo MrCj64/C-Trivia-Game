@@ -21,7 +21,7 @@ namespace TriviaGame.ViewModels
         private int puntuacionTotal = 0;
         private string categoriaActual = "";
 
-        public string jugadorActual = "";   // <-- nuevo
+        public string jugadorActual = "";
         public int idJugadorActual = -1;
 
         public object CurrentView
@@ -47,46 +47,38 @@ namespace TriviaGame.ViewModels
 
         public async Task selectedCategory(string categoryId)
         {
-            System.Diagnostics.Debug.WriteLine($"[selectedCategory] INICIO - categoryId: {categoryId}");
 
             if (!int.TryParse(categoryId, out int idCategoria))
             {
-                System.Diagnostics.Debug.WriteLine($"[selectedCategory] ERROR - categoryId no es número: {categoryId}");
                 return;
             }
 
-            // Abre la sala de espera y espera a que se complete
             await AbrirSalaEspera(idCategoria);
         }
 
         private async Task AbrirSalaEspera(int idCategoria)
         {
-            System.Diagnostics.Debug.WriteLine($"[AbrirSalaEspera] Abriendo sala para categoría {idCategoria}");
 
             var salaEspera = new SalaEspera(
                 idCategoria.ToString(), 
                 jugadorActual, 
                 async () =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[Callback SalaEspera] Timer completado o game_start recibido");
                     await IniciarJuego(idCategoria);
                 }
             );
 
             CurrentView = salaEspera;
-            System.Diagnostics.Debug.WriteLine($"[AbrirSalaEspera] SalaEspera asignado a CurrentView");
         }
 
         private async Task IniciarJuego(int idCategoria)
         {
-            System.Diagnostics.Debug.WriteLine($"[IniciarJuego] Iniciando juego para categoría {idCategoria}");
 
             aciertosTotal = 0;
             erroresTotal = 0;
             puntuacionTotal = 0;
 
             categoriaActual = await queryService.GetNombreCategoria(idCategoria);
-            System.Diagnostics.Debug.WriteLine($"[IniciarJuego] Categoría obtenida: {categoriaActual}");
 
             var preguntasRaw = await queryService.GetPreguntas(idCategoria);
 
@@ -96,7 +88,6 @@ namespace TriviaGame.ViewModels
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine($"[IniciarJuego] Preguntas obtenidas: {preguntasRaw.Count}");
 
             var preguntas = new List<questionModel>();
             foreach (var p in preguntasRaw.OrderBy(_ => random.Next()))
@@ -115,7 +106,6 @@ namespace TriviaGame.ViewModels
                     }).ToList();
 
                 string tipo = respuestas.FirstOrDefault()?.answerType?.ToUpper() ?? "TEXT";
-                System.Diagnostics.Debug.WriteLine($"[IniciarJuego] Pregunta tipo: {tipo}");
 
                 questionModel pregunta = tipo switch
                 {
@@ -131,7 +121,6 @@ namespace TriviaGame.ViewModels
                 preguntas.Add(pregunta);
             }
 
-            System.Diagnostics.Debug.WriteLine($"[IniciarJuego] Mostrando pregunta 0 de {preguntas.Count}");
             MostrarPregunta(preguntas, 0);
         }
 
@@ -142,7 +131,7 @@ namespace TriviaGame.ViewModels
                 if (idJugadorActual != -1)
                     queryService.insertaPuntuacion(idJugadorActual, preguntas[0].categoryId, puntuacionTotal);
 
-                CurrentView = new finalScoreViewModel(IrAMenu);
+                CurrentView = new Score();
                 return;
             }
 

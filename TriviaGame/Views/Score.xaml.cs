@@ -10,55 +10,76 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace TriviaGame.Views
 {
-    /// <summary>
-    /// Interaction logic for Score.xaml
-    /// </summary>
-    public partial class Score : Window
+    public partial class Score : UserControl
     {
         List<int> _avataresUsados = new List<int>();
-        string[] _nombresSimulados = { "", "Ciber_Dev", "SQL_Master", "MichiLover", "Pro_Gamer" };
-        public Score()
+        private Action _onMenuClick;
+
+        public Score(List<(string nombre, int puntos, int avatar)> jugadores = null, Action onMenuClick = null)
         {
             InitializeComponent();
-            _avataresUsados.Add(3);
-            _avataresUsados.Add(2);
-            _avataresUsados.Add(7);
-            _avataresUsados.Add(5);
+            _onMenuClick = onMenuClick;
 
-            for (int i = 0; i < 4; i++)
+            Loaded += (s, e) =>
             {
-                lugares(i, _nombresSimulados[i], 100 - (i * 10));
-                ImageBrush pincelListo = ObtenerPincelAvatar(_avataresUsados[i]);
-                var avatar = (System.Windows.Shapes.Shape)this.FindName($"Avatar{i+1}");
-                avatar.Fill = pincelListo;
-            }
+                if (jugadores != null && jugadores.Count > 0)
+                {
+                    var jugadoresOrdenados = jugadores.OrderByDescending(j => j.puntos).ToList();
+                    for (int i = 0; i < Math.Min(4, jugadoresOrdenados.Count); i++)
+                    {
+                        lugares(i, jugadoresOrdenados[i].nombre, jugadoresOrdenados[i].puntos);
+                        ImageBrush pincelListo = ObtenerPincelAvatar(jugadoresOrdenados[i].avatar);
+                        var avatar = (System.Windows.Shapes.Shape)this.FindName($"Avatar{i + 1}");
+                        if (avatar != null)
+                            avatar.Fill = pincelListo;
+                        _avataresUsados.Add(jugadoresOrdenados[i].avatar);
+                    }
+                }
+                else
+                {
+                    _avataresUsados.Add(3);
+                    _avataresUsados.Add(2);
+                    _avataresUsados.Add(7);
+                    _avataresUsados.Add(5);
 
+                    string[] _nombresSimulados = { "", "Ciber_Dev", "SQL_Master", "MichiLover", "Pro_Gamer" };
+                    for (int i = 0; i < 4; i++)
+                    {
+                        lugares(i, _nombresSimulados[i], 100 - (i * 10));
+                        ImageBrush pincelListo = ObtenerPincelAvatar(_avataresUsados[i]);
+                        var avatar = (System.Windows.Shapes.Shape)this.FindName($"Avatar{i + 1}");
+                        if (avatar != null)
+                            avatar.Fill = pincelListo;
+                    }
+                }
+            };
         }
 
         public void lugares(int lugar, string nombre, int puntos)
         {
             switch (lugar)
             {
-                case 1:
+                case 0:
                     Player1.Visibility = Visibility.Visible;
                     TxtUsuario1.Text = nombre;
                     Puntuacion1.Text = puntos.ToString();
                     break;
-                case 2:
+                case 1:
                     Player2.Visibility = Visibility.Visible;
                     TxtUsuario2.Text = nombre;
                     Puntuacion2.Text = puntos.ToString();
                     break;
-                case 3:
+                case 2:
                     Player3.Visibility = Visibility.Visible;
                     TxtUsuario3.Text = nombre;
                     Puntuacion3.Text = puntos.ToString();
                     break;
-                case 4:
+                case 3:
                     Player4.Visibility = Visibility.Visible;
                     TxtUsuario4.Text = nombre;
                     Puntuacion4.Text = puntos.ToString();
@@ -73,15 +94,12 @@ namespace TriviaGame.Views
 
             try
             {
-                // Usamos el símbolo @ para poder usar las diagonales invertidas \ de Windows sin problemas
-                string rutaFisica = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "Avatar", $"{numeroImagen}.png");
+                string rutaFisica = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "avatar", $"avatar{numeroImagen}.png");
 
-                // Obligamos a WPF a construir la imagen de forma estricta
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(rutaFisica, UriKind.Absolute);
 
-                // Esta propiedad ignora si el archivo está "bloqueado" por otra carpeta
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
 
@@ -89,10 +107,15 @@ namespace TriviaGame.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fallo al cargar la ruta física: {ex.Message}");
+                System.Console.WriteLine($"Fallo al cargar avatar: {ex.Message}");
             }
 
             return pincel;
+        }
+
+        private void BtnMenu_Click(object sender, RoutedEventArgs e)
+        {
+            _onMenuClick?.Invoke();
         }
     }
 }

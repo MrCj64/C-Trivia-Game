@@ -164,7 +164,6 @@ namespace TriviaGame.Services
                 response.EnsureSuccessStatusCode();
                 string respuestaJson = await response.Content.ReadAsStringAsync();
 
-                // ← deserializa el JSON correctamente
                 var resultado = JsonConvert.DeserializeObject<Dictionary<string, object>>(respuestaJson);
                 return Convert.ToBoolean(resultado["existe"]);
             }

@@ -27,13 +27,15 @@ namespace TriviaGame.Views
         private bool _socketConnected = false;
         private bool _gameStarting = false;
         private Func<Task> _onGameStartCallback;
+        private DateTime _tiempoInicio = DateTime.MinValue;
+        private double _desviacionReloj = 0;
 
         public SalaEspera(string categoria = "General", string nombreJugador = "", Func<Task> onGameStart = null)
         {
             InitializeComponent();
 
             _category = categoria;
-            _playerName = nombreJugador;
+            _playerName = string.IsNullOrWhiteSpace(nombreJugador) ? "Jugador" : nombreJugador;
 
             _roomId = $"room_{categoria}";
 
@@ -44,35 +46,59 @@ namespace TriviaGame.Views
             Player3.Visibility = Visibility.Hidden;
             Player4.Visibility = Visibility.Hidden;
 
-            _ = ConectarYUnirseASalaAsync();
+            Loaded += SalaEspera_Loaded;
         }
 
-        private void IniciarTemporizador()
+        private async void SalaEspera_Loaded(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Iniciando temporizador. Tiempo inicial: {_tiempoRestante} segundos");
+            Loaded -= SalaEspera_Loaded;
+
+            await ConectarYUnirseASalaAsync();
+        }
+
+        private void IniciarTemporizador(DateTime tiempoServidor = default)
+        {
+            if (tiempoServidor != DateTime.MinValue)
+            {
+                _tiempoInicio = tiempoServidor;
+                _desviacionReloj = (DateTime.UtcNow - tiempoServidor).TotalMilliseconds;
+            }
+            else
+            {
+                _tiempoInicio = DateTime.UtcNow;
+                _desviacionReloj = 0;
+            }
+
             _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(1);
+            _timer.Interval = TimeSpan.FromMilliseconds(100);
             _timer.Tick += Timer_Tick;
             _timer.Start();
 
-            if (Timer != null)
-                Timer.Content = _tiempoRestante.ToString();
+            ActualizarTiempoRestante();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if (_tiempoRestante > 0)
-            {
-                _tiempoRestante--;
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Timer: {_tiempoRestante} segundos restantes");
-                if (Timer != null)
-                    Timer.Content = _tiempoRestante.ToString();
-            }
-            else
-            {
-                _timer.Stop();
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Timer llegó a 0");
+            ActualizarTiempoRestante();
+        }
 
+        private void ActualizarTiempoRestante()
+        {
+            if (_tiempoInicio == DateTime.MinValue) return;
+
+            double tiempoTranscurrido = (DateTime.UtcNow - _tiempoInicio).TotalSeconds;
+            int nuevoTiempo = (int)(20 - tiempoTranscurrido);
+
+            if (nuevoTiempo != _tiempoRestante)
+            {
+                _tiempoRestante = nuevoTiempo;
+                if (Timer != null)
+                    Timer.Content = Math.Max(0, _tiempoRestante).ToString();
+            }
+
+            if (_tiempoRestante <= 0)
+            {
+                _timer?.Stop();
                 if (!_gameStarting)
                 {
                     IniciarJuego();
@@ -82,20 +108,28 @@ namespace TriviaGame.Views
 
         private async Task ConectarYUnirseASalaAsync()
         {
+            if (_socketConnected)
+            {
+                System.Console.WriteLine("Ya existe una conexión activa, ignorando nueva solicitud");
+                return;
+            }
+
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Iniciando conexión al servidor...");
+                System.Console.WriteLine($"Intentando conectar al servidor como '{_playerName}' en categoría '{_category}'");
 
                 if (await _socketClient.ConnectAsync())
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Conectado al servidor. Uniéndose a sala {_roomId}...");
                     _socketClient.OnMessageReceived += SocketClient_OnMessageReceived;
                     _socketClient.OnGameStarted += SocketClient_OnGameStarted;
 
                     _avatarId = _random.Next(1, 5);
 
+                    System.Console.WriteLine($"Enviando solicitud para unirse a sala: room={_roomId}, player={_playerName}, avatar={_avatarId}");
+
                     string response = await _socketClient.JoinRoomAsync(_roomId, _category, _playerName, _avatarId);
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Respuesta de unirse a sala: {response}");
+
+                    System.Console.WriteLine($"Respuesta del servidor: {response}");
 
                     var responseObj = JsonSerializer.Deserialize<Dictionary<string, object>>(response);
                     if (responseObj != null && responseObj.ContainsKey("status"))
@@ -104,23 +138,31 @@ namespace TriviaGame.Views
                         {
                             _socketConnected = true;
 
-                            // Iniciar temporizador solo después de unirse exitosamente
-                            Dispatcher.Invoke(() => IniciarTemporizador());
+                            DateTime tiempoServidor = DateTime.UtcNow;
+                            if (responseObj.ContainsKey("timer_start"))
+                            {
+                                if (double.TryParse(responseObj["timer_start"].ToString(), out double timerStartUnix))
+                                {
+                                    tiempoServidor = UnixTimeStampToDateTime(timerStartUnix);
+                                }
+                            }
+
+                            Dispatcher.Invoke(() => IniciarTemporizador(tiempoServidor));
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error al unirse: {responseObj.GetValueOrDefault("message", "Error desconocido")}");
+                            System.Console.WriteLine($"Error al unirse a la sala: {responseObj.GetValueOrDefault("message", "Error desconocido")}");
                         }
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error: No se pudo conectar al servidor");
+                    System.Console.WriteLine("No se pudo conectar al servidor");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error en ConectarYUnirseASalaAsync: {ex.Message}");
+                System.Console.WriteLine($"Error en ConectarYUnirseASalaAsync: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -128,7 +170,6 @@ namespace TriviaGame.Views
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Mensaje recibido: {message}");
 
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var response = JsonSerializer.Deserialize<Dictionary<string, object>>(message, options);
@@ -139,20 +180,18 @@ namespace TriviaGame.Views
 
                     if (action == "room_status")
                     {
-                        System.Diagnostics.Debug.WriteLine($"[SalaEspera] room_status recibido");
                         ActualizarEstadoSala(message);
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error procesando mensaje: {ex.Message}");
+                System.Console.WriteLine(ex.Message);
             }
         }
 
         private void SocketClient_OnGameStarted(object sender, GameStartEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Evento game_started recibido del servidor");
             Dispatcher.InvokeAsync(() =>
             {
                 if (!_gameStarting)
@@ -169,18 +208,15 @@ namespace TriviaGame.Views
             _gameStarting = true;
             _timer?.Stop();
 
-            System.Diagnostics.Debug.WriteLine($"[SalaEspera] Iniciando juego...");
-
             Dispatcher.InvokeAsync(async () =>
             {
                 try
                 {
                     await (_onGameStartCallback?.Invoke() ?? Task.CompletedTask);
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Callback completado");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error en callback: {ex.Message}");
+                    System.Console.WriteLine(ex.Message);
                 }
             });
         }
@@ -194,6 +230,30 @@ namespace TriviaGame.Views
                 {
                     var root = doc.RootElement;
 
+                    if (root.TryGetProperty("timer_start", out JsonElement timerStartElement))
+                    {
+                        if (double.TryParse(timerStartElement.GetRawText(), out double timerStartUnix))
+                        {
+                            DateTime tiempoServidor = UnixTimeStampToDateTime(timerStartUnix);
+                            if (_tiempoInicio == DateTime.MinValue || _tiempoInicio > tiempoServidor)
+                            {
+                                _tiempoInicio = tiempoServidor;
+                            }
+                        }
+                    }
+
+                    if (root.TryGetProperty("server_time", out JsonElement serverTimeElement))
+                    {
+                        if (double.TryParse(serverTimeElement.GetRawText(), out double serverTimeUnix))
+                        {
+                            DateTime tiempoServidor = UnixTimeStampToDateTime(serverTimeUnix);
+                            if (_tiempoInicio == DateTime.MinValue)
+                            {
+                                _tiempoInicio = tiempoServidor;
+                            }
+                        }
+                    }
+
                     if (root.TryGetProperty("room_info", out JsonElement roomInfoElement))
                     {
                         if (roomInfoElement.TryGetProperty("players", out JsonElement playersElement))
@@ -204,11 +264,10 @@ namespace TriviaGame.Views
                             if (players != null)
                             {
                                 _jugadoresConectados = players.Count;
-                                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Actualizando UI con {_jugadoresConectados} jugadores");
 
                                 Dispatcher.Invoke(() =>
                                 {
- 
+
                                     for (int i = 0; i < 4; i++)
                                     {
                                         OcultarJugador(i);
@@ -238,7 +297,7 @@ namespace TriviaGame.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error actualizando estado de sala: {ex.Message}\n{ex.StackTrace}");
+                System.Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -280,11 +339,10 @@ namespace TriviaGame.Views
                 avatarEllipse.Fill = CargarAvatar(numeroAvatar);
                 textBlock.Text = nombreJugador;
 
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Jugador {indice} mostrado: {nombreJugador} con avatar {numeroAvatar}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error mostrando jugador {indice}: {ex.Message}");
+                System.Console.WriteLine($"Error mostrando jugador {indice}: {ex.Message}");
             }
         }
 
@@ -316,7 +374,7 @@ namespace TriviaGame.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SalaEspera] Error ocultando jugador {indice}: {ex.Message}");
+                System.Console.WriteLine($"Error ocultando jugador {indice}: {ex.Message}");
             }
         }
 
@@ -328,16 +386,7 @@ namespace TriviaGame.Views
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                rutaFisica = System.IO.Path.Combine(baseDir, $"Views/Imagenes/Avatares/avatar{numeroImagen}.png");
-
-                if (!System.IO.File.Exists(rutaFisica))
-                {
-                    string rutaAlternativa = System.IO.Path.Combine(baseDir, $"../..//Views/Imagenes/Avatares/avatar{numeroImagen}.png");
-                    if (System.IO.File.Exists(rutaAlternativa))
-                    {
-                        rutaFisica = rutaAlternativa;
-                    }
-                }
+                rutaFisica = System.IO.Path.Combine(baseDir, $"Views/Avatar/{numeroImagen}.png");
 
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
@@ -349,10 +398,17 @@ namespace TriviaGame.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Fallo al cargar avatar {numeroImagen}: {ex.Message}");
+                System.Console.WriteLine($"Fallo al cargar avatar {numeroImagen}: {ex.Message}");
             }
 
             return pincel;
+        }
+
+        private DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToUniversalTime();
+            return dateTime;
         }
     }
 }
