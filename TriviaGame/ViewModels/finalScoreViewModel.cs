@@ -31,8 +31,8 @@ namespace TriviaGame.ViewModels
                 {
                     Jugador = d["nombreJugador"].ToString(),
                     Categoria = d["NombreCategoria"].ToString(),
-                    Puntuacion = (int)d["puntuacionTotal"],
-                    Aciertos = (int)d["puntuacionTotal"] / 10
+                    Puntuacion = Convert.ToInt32(d["puntuacionTotal"]),
+                    Aciertos = Convert.ToInt32(d["puntuacionTotal"]) / 10
                 });
             }
         }
