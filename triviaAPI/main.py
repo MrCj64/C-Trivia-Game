@@ -20,3 +20,7 @@ app.include_router(respuesta)
 @app.get("/")
 def root():
     return {"message": "Bienvenido a TriviaBD API"}
+
+if __name__ == "__main__":
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port = 8000) #Ahora escucha de todos los lados posibles
