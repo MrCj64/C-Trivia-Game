@@ -27,7 +27,7 @@ namespace TriviaGame.Services
         public event EventHandler<GameStartEventArgs> OnGameStarted;
         public event EventHandler<GameOverEventArgs> OnGameOver;
 
-        public SocketClientService(string serverIp = "10.103.158.217", int serverPort = 50000, string apiBaseUrl = "http://10.103.158.219:8000")
+        public SocketClientService(string serverIp = "10.103.151.13", int serverPort = 50000, string apiBaseUrl = "http://10.103.151.13:8000")
         {
             _serverIp = serverIp;
             _serverPort = serverPort;
