@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -12,10 +13,9 @@ namespace TriviaGame.Services
     {
         private TcpClient _client;
         private NetworkStream _stream;
-        private string _serverIp;
-        private int _serverPort;
-        private string _playerName;
-        private string _roomId;
+        private readonly string _serverIp;
+        private readonly int _serverPort;
+        private readonly HttpClient _httpClient;
         private bool _isConnected = false;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _listenerTask;
@@ -27,12 +27,13 @@ namespace TriviaGame.Services
         public event EventHandler<GameStartEventArgs> OnGameStarted;
         public event EventHandler<GameOverEventArgs> OnGameOver;
 
-        public SocketClientService(string serverIp = "192.168.0.226", int serverPort = 50000)
+        public SocketClientService(string serverIp = "10.103.158.217", int serverPort = 50000, string apiBaseUrl = "http://10.103.158.219:8000")
         {
             _serverIp = serverIp;
             _serverPort = serverPort;
             _client = new TcpClient();
             _cancellationTokenSource = new CancellationTokenSource();
+            _httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
         }
 
         public async Task<bool> ConnectAsync()
@@ -43,11 +44,6 @@ namespace TriviaGame.Services
                 return true;
             }
 
-            if (_client != null && _client.Connected)
-            {
-                await DisconnectAsync();
-            }
-
             try
             {
                 _client = new TcpClient();
@@ -55,7 +51,6 @@ namespace TriviaGame.Services
                 var timeoutTask = Task.Delay(5000);
 
                 var completedTask = await Task.WhenAny(connectTask, timeoutTask);
-
                 if (completedTask == timeoutTask)
                 {
                     _client?.Dispose();
@@ -78,6 +73,45 @@ namespace TriviaGame.Services
                 _client?.Dispose();
                 _client = new TcpClient();
                 OnConnectionStatusChanged?.Invoke(this, $"Error al conectar: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ValidateOrRegisterUserAsync(string playerName)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("/jugador");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var jugadores = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonString);
+
+                    if (jugadores != null)
+                    {
+                        foreach (var j in jugadores)
+                        {
+                            if (j.TryGetValue("nomJugador", out var val) && val?.ToString()?.ToLower() == playerName.ToLower())
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                var payload = new { nomJugador = playerName };
+                var content = new StringContent(
+                    JsonSerializer.Serialize(payload),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var postResponse = await _httpClient.PostAsync("/jugador", content);
+                return postResponse.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error de conexión con la API: {ex.Message}");
                 return false;
             }
         }
@@ -108,11 +142,9 @@ namespace TriviaGame.Services
                         if (response != null && response.ContainsKey("action"))
                         {
                             string action = response["action"].ToString();
-
                             if (action == "game_start")
                             {
-                                var eventArgs = new GameStartEventArgs();
-                                OnGameStarted?.Invoke(this, eventArgs);
+                                OnGameStarted?.Invoke(this, new GameStartEventArgs());
                             }
                             else if (action == "game_over")
                             {
@@ -131,8 +163,7 @@ namespace TriviaGame.Services
                                         }
                                     }
                                 }
-                                var eventArgs = new GameOverEventArgs { FinalScores = finalScores };
-                                OnGameOver?.Invoke(this, eventArgs);
+                                OnGameOver?.Invoke(this, new GameOverEventArgs { FinalScores = finalScores });
                             }
                         }
                     }
@@ -148,7 +179,62 @@ namespace TriviaGame.Services
             }
         }
 
-        public async Task<string> JoinRoomAsync(string roomId, string category, string playerName, int avatarId)
+        public async Task<int> ValidateAndGetUserIdAsync(string playerName)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("/jugador");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var jugadores = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonString);
+
+                    if (jugadores != null)
+                    {
+                        foreach (var j in jugadores)
+                        {
+                            if (j.TryGetValue("nomJugador", out var val) && val?.ToString()?.ToLower() == playerName.ToLower())
+                            {
+                                if (j.TryGetValue("idJugador", out var idVal) && idVal != null)
+                                    return Convert.ToInt32(idVal);
+                                if (j.TryGetValue("id", out var idVal2) && idVal2 != null)
+                                    return Convert.ToInt32(idVal2);
+                            }
+                        }
+                    }
+                }
+
+                var payload = new { nomJugador = playerName };
+                var content = new StringContent(
+                    JsonSerializer.Serialize(payload),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var postResponse = await _httpClient.PostAsync("/jugador", content);
+                if (postResponse.IsSuccessStatusCode)
+                {
+                    var jsonString = await postResponse.Content.ReadAsStringAsync();
+                    var created = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+                    if (created != null)
+                    {
+                        if (created.TryGetValue("idJugador", out var idVal) && idVal != null)
+                            return Convert.ToInt32(idVal);
+                        if (created.TryGetValue("id", out var idVal2) && idVal2 != null)
+                            return Convert.ToInt32(idVal2);
+                    }
+                }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error de conexión con la API: {ex.Message}");
+                return 0;
+            }
+        }
+
+        // Modifica la firma de tu método JoinRoomAsync para incluir el parámetro del ID
+        public async Task<string> JoinRoomAsync(string roomId, string category, string playerName, int avatarId, int playerId = 0)
         {
             if (!_isConnected || _stream == null)
             {
@@ -159,7 +245,7 @@ namespace TriviaGame.Services
 
             try
             {
-                var request = new { action = "join_room", room_id = roomId, category = category, player_name = playerName, avatar = avatarId };
+                var request = new { action = "join_room", room_id = roomId, category = category, player_name = playerName, avatar = avatarId, player_id = playerId };
                 string jsonRequest = JsonSerializer.Serialize(request);
                 byte[] data = Encoding.UTF8.GetBytes(jsonRequest);
                 await _stream.WriteAsync(data, 0, data.Length);
@@ -170,8 +256,7 @@ namespace TriviaGame.Services
 
                 if (completedTask == _joinResponseTcs.Task)
                 {
-                    string response = await _joinResponseTcs.Task;
-                    return response;
+                    return await _joinResponseTcs.Task;
                 }
 
                 return "{\"status\":\"error\",\"message\":\"Timeout - No se recibió respuesta del servidor\"}";
@@ -184,11 +269,7 @@ namespace TriviaGame.Services
 
         public async Task<bool> StartGameAsync(string roomId)
         {
-            if (!_isConnected || _stream == null)
-            {
-                return false;
-            }
-
+            if (!_isConnected || _stream == null) return false;
             try
             {
                 var request = new { action = "start_game", room_id = roomId };
@@ -196,10 +277,9 @@ namespace TriviaGame.Services
                 byte[] data = Encoding.UTF8.GetBytes(jsonRequest);
                 await _stream.WriteAsync(data, 0, data.Length);
                 await _stream.FlushAsync();
-
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -207,11 +287,7 @@ namespace TriviaGame.Services
 
         public async Task<bool> SendGameFinishedAsync(int score, int categoryId)
         {
-            if (!_isConnected || _stream == null)
-            {
-                return false;
-            }
-
+            if (!_isConnected || _stream == null) return false;
             try
             {
                 var request = new { action = "game_finished", score = score, category_id = categoryId };
@@ -219,10 +295,9 @@ namespace TriviaGame.Services
                 byte[] data = Encoding.UTF8.GetBytes(jsonRequest);
                 await _stream.WriteAsync(data, 0, data.Length);
                 await _stream.FlushAsync();
-
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -245,34 +320,18 @@ namespace TriviaGame.Services
             }
         }
 
-        /// <summary>
-        /// Desconecta del servidor de forma segura y espera a que el listener se cierre
-        /// </summary>
         public async Task<bool> DisconnectAsync()
         {
-            System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Iniciando desconexión...");
-
-            // Si ya estaba desconectado, retornar inmediatamente
-            if (!_isConnected && _client == null)
-            {
-                System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Ya estaba desconectado");
-                return true;
-            }
+            if (!_isConnected && _client == null) return true;
 
             try
             {
-                // PASO 1: Marcar como desconectado PRIMERO para evitar condiciones de carrera
                 _isConnected = false;
-                System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Marcado como desconectado");
-
-                // PASO 2: Cancelar el listener token para que se detenga la lectura
                 if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
                 {
                     _cancellationTokenSource.Cancel();
-                    System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Token de cancelación enviado");
                 }
 
-                // PASO 3: Intentar enviar mensaje de cierre al servidor
                 if (_stream != null && _client != null && _client.Connected)
                 {
                     try
@@ -280,81 +339,34 @@ namespace TriviaGame.Services
                         var request = new { action = "close" };
                         string jsonRequest = JsonSerializer.Serialize(request);
                         byte[] data = Encoding.UTF8.GetBytes(jsonRequest);
-
                         await _stream.WriteAsync(data, 0, data.Length);
                         await _stream.FlushAsync();
-                        System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Mensaje de cierre enviado al servidor");
                     }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[DisconnectAsync] No se pudo enviar mensaje de cierre: {ex.Message}");
-                        // Continuar con desconexión aunque falle el envío
-                    }
+                    catch { }
                 }
 
-                // PASO 4: Esperar a que el listener termine (con timeout)
                 if (_listenerTask != null && !_listenerTask.IsCompleted)
                 {
-                    try
-                    {
-                        var completedTask = await Task.WhenAny(_listenerTask, Task.Delay(2000));
-                        if (completedTask == _listenerTask)
-                        {
-                            System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Listener terminó exitosamente");
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Timeout esperando listener (2 segundos)");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[DisconnectAsync] Error esperando listener: {ex.Message}");
-                    }
+                    await Task.WhenAny(_listenerTask, Task.Delay(2000));
                 }
 
-                // PASO 5: Cerrar stream
-                if (_stream != null)
-                {
-                    try
-                    {
-                        _stream.Close();
-                        _stream.Dispose();
-                        _stream = null;
-                        System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Stream cerrado");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[DisconnectAsync] Error cerrando stream: {ex.Message}");
-                    }
-                }
+                _stream?.Close();
+                _stream?.Dispose();
+                _stream = null;
 
-                // PASO 6: Cerrar cliente TCP
                 if (_client != null)
                 {
-                    try
-                    {
-                        if (_client.Connected)
-                        {
-                            _client.Close();
-                        }
-                        _client.Dispose();
-                        _client = null;
-                        System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Cliente TCP cerrado");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[DisconnectAsync] Error cerrando cliente: {ex.Message}");
-                    }
+                    if (_client.Connected) _client.Close();
+                    _client.Dispose();
+                    _client = null;
                 }
 
+                _httpClient?.Dispose();
                 OnConnectionStatusChanged?.Invoke(this, "Desconectado del servidor");
-                System.Diagnostics.Debug.WriteLine("[DisconnectAsync] Desconexión completada exitosamente");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[DisconnectAsync] Error durante desconexión: {ex.Message}");
                 OnConnectionStatusChanged?.Invoke(this, $"Error al desconectar: {ex.Message}");
                 return false;
             }

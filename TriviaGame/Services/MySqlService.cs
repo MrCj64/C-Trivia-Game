@@ -13,7 +13,7 @@ namespace TriviaGame.Services
     internal class MySqlService
     {
         private static readonly HttpClient client = new HttpClient();
-        private const string base_url = "http://127.0.0.1:8000";
+        private const string base_url = "http://10.103.158.219:8000";
 
         public HttpClient getClient() { return client; }
         public string getBaseUrl() { return base_url; }
