@@ -22,7 +22,7 @@
         FontFamily="Bauhaus 93"
         Foreground="White"
         BorderThickness="0"
-        Cursor="Hand" Click="Button_Click_1" >
+        Cursor="Hand" >
             <Button.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                     <GradientStop Color="#004aad" Offset="0"/>

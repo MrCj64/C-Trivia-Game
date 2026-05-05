@@ -6,17 +6,23 @@ using TriviaGame.Models;
 
 namespace TriviaGame.ViewModels
 {
-    public class audioGameViewModel : propertiesChangesViewModel
+    public class audioGameViewModel : propertiesChangesViewModel, IGameQuestion
     {
         private readonly List<questionModel> _preguntas;
         private readonly Action _onFinished;
         private int _index = 0;
+        private bool _hasAnswered = false;
+        private bool _hasRevealed = false;
+        private int _selectedOption = -1;
         private readonly MediaPlayer _player = new MediaPlayer();
         public int Puntuacion { get; private set; } = 0;
 
 
         public int Aciertos { get; private set; } = 0;
         public int Errores { get; private set; } = 0;
+
+        public bool HasAnswered => _hasAnswered;
+        public bool HasRevealed => _hasRevealed;
 
         private string _textoPregunta = "";
         public string TextoPregunta
@@ -55,6 +61,9 @@ namespace TriviaGame.ViewModels
         {
             if (_index >= _preguntas.Count) { _onFinished?.Invoke(); return; }
             ResetColores();
+            _hasAnswered = false;
+            _hasRevealed = false;
+            _selectedOption = -1;
             _player.Stop();
             var pregunta = _preguntas[_index];
             TextoPregunta = pregunta.question;
@@ -87,6 +96,10 @@ namespace TriviaGame.ViewModels
             var respuestas = _preguntas[_index].answers;
             int elegido = opcion switch { "A" => 0, "B" => 1, "C" => 2, "D" => 3, _ => -1 };
             if (elegido < 0 || elegido >= respuestas.Count) return;
+            if (_hasAnswered || _hasRevealed) return;
+
+            _hasAnswered = true;
+            _selectedOption = elegido;
 
             if (respuestas[elegido].isCorrect)
             {
@@ -94,13 +107,34 @@ namespace TriviaGame.ViewModels
                 Puntuacion += _preguntas[_index].points;
             }
             else
+            {
                 Errores++;
-            MostrarFeedback(respuestas, elegido);
+            }
+            MostrarSeleccion(elegido);
+        }
+
+        public void RevealAnswer()
+        {
+            if (_hasRevealed) return;
+            _hasRevealed = true;
+
+            var respuestas = _preguntas[_index].answers;
+            MostrarFeedback(respuestas, _selectedOption);
 
             var timer = new System.Windows.Threading.DispatcherTimer
-            { Interval = TimeSpan.FromSeconds(1) };
+            { Interval = TimeSpan.FromSeconds(3) };
             timer.Tick += (s, e) => { timer.Stop(); _index++; CargarPregunta(); };
             timer.Start();
+        }
+
+        private void MostrarSeleccion(int elegido)
+        {
+            string[] c = { "Transparent", "Transparent", "Transparent", "Transparent" };
+            if (elegido >= 0 && elegido < c.Length)
+            {
+                c[elegido] = "#FF64B5F6";
+            }
+            ColorA = c[0]; ColorB = c[1]; ColorC = c[2]; ColorD = c[3];
         }
 
         private void MostrarFeedback(List<answerModel> respuestas, int elegido)

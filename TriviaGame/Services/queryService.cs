@@ -148,7 +148,8 @@ namespace TriviaGame.Services
             }
             catch (Exception e)
             {
-                MessageBox.Show("e");
+                // Log error or handle silently
+                System.Diagnostics.Debug.WriteLine($"Error inserting score: {e.Message}");
             }
 
 
@@ -192,12 +193,13 @@ namespace TriviaGame.Services
             }
         }
 
-        public async Task<List<Dictionary<string, object>>> GetPuntuaciones()
+        public async Task<List<Dictionary<string, object>>> GetPuntuacionesPorCategoria(int idCategoria)
         {
             try
             {
                 List<Dictionary<string, object>> listaPuntuaciones;
-                HttpResponseMessage response = await client.GetAsync($"{base_url}/puntuacion/ranking");
+                string url = idCategoria == 0 ? $"{base_url}/puntuacion/ranking" : $"{base_url}/puntuacion/{idCategoria}";
+                HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
                 string puntuacionesJSon = await response.Content.ReadAsStringAsync();
 

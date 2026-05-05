@@ -1,8 +1,13 @@
 import socket
 import threading
 import json
+import urllib.request
+import urllib.error
+import random
 from datetime import datetime
 import time
+
+BASE_API_URL = "http://127.0.0.1:8000"
 
 salas = {}
 salas_lock = threading.Lock()
@@ -19,6 +24,9 @@ class Room:
         self.is_active = True
         self.game_started = False
         self.start_timer = None
+        self.questions = []
+        self.final_scores = {}  # {player_name: score}
+        self.finished_players = set()  # players who finished the game
 
     def add_player(self, player_info):
         if len(self.players) < self.max_players:
@@ -136,9 +144,49 @@ def handle_client(client_socket, addr):
 
                 client_socket.send(json.dumps(response).encode("utf-8"))
 
+            elif action == "start_game":
+                room_id = request_data.get("room_id")
+                print(f"[{datetime.now()}] start_game request recibida para sala {room_id} desde {addr}")
+                with salas_lock:
+                    if room_id in salas and not salas[room_id].game_started:
+                        broadcast_game_start(salas[room_id], room_id)
+                continue
+
             elif action == "close" or action == "leave_room":
                 print(f"[{datetime.now()}] Cliente {addr} ({player_name}) solicita {action}")
                 break
+            
+            elif action == "game_finished":
+                score = request_data.get("score", 0)
+                category_id = request_data.get("category_id")
+                
+                print(f"[{datetime.now()}] {player_name} terminó el juego con puntuación {score}")
+                
+                with salas_lock:
+                    # Find the room this player is in
+                    player_room = None
+                    for r_id, room in salas.items():
+                        if any(p['name'] == player_name for p in room.players):
+                            player_room = room
+                            room_id = r_id
+                            break
+                    
+                    if player_room:
+                        player_room.final_scores[player_name] = score
+                        player_room.finished_players.add(player_name)
+                        
+                        # Save score to database
+                        player_info = next((p for p in player_room.players if p['name'] == player_name), None)
+                        if player_info and 'id' in player_info:
+                            save_score_to_db(player_info['id'], category_id, score)
+                        
+                        # Check if all players finished
+                        if len(player_room.finished_players) == len(player_room.players):
+                            print(f"[{datetime.now()}] Todos los jugadores terminaron en sala {room_id}. Enviando puntuaciones finales.")
+                            broadcast_game_over(player_room, room_id)
+                    else:
+                        print(f"[{datetime.now()}] No se encontró sala para {player_name}")
+                continue
             
             else:
                 print(f"[{datetime.now()}] Acción desconocida '{action}' de {addr}")
@@ -166,6 +214,113 @@ def handle_client(client_socket, addr):
 
         client_socket.close()
         print(f"[{datetime.now()}] Conexión cerrada con {addr[0]}:{addr[1]}")
+
+def api_get(endpoint):
+    try:
+        with urllib.request.urlopen(f"{BASE_API_URL}{endpoint}", timeout=5) as response:
+            if response.status != 200:
+                print(f"[{datetime.now()}] API error {response.status} en {endpoint}")
+                return None
+            payload = response.read().decode("utf-8")
+            return json.loads(payload)
+    except urllib.error.HTTPError as e:
+        print(f"[{datetime.now()}] HTTPError al consultar API {endpoint}: {e}")
+    except urllib.error.URLError as e:
+        print(f"[{datetime.now()}] URLError al consultar API {endpoint}: {e}")
+    except Exception as e:
+        print(f"[{datetime.now()}] Error al consultar API {endpoint}: {e}")
+    return None
+
+
+def save_score_to_db(player_id, category_id, score):
+    """Guarda la puntuación en la base de datos"""
+    try:
+        data = {
+            "IdJugador": player_id,
+            "IdCategoria": category_id,
+            "puntuacionTotal": score
+        }
+        json_data = json.dumps(data).encode("utf-8")
+        req = urllib.request.Request(f"{BASE_API_URL}/puntuacion", data=json_data, headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            if response.status == 200:
+                print(f"[{datetime.now()}] Puntuación guardada para jugador {player_id}: {score} puntos")
+            else:
+                print(f"[{datetime.now()}] Error guardando puntuación: HTTP {response.status}")
+    except Exception as e:
+        print(f"[{datetime.now()}] Error guardando puntuación: {e}")
+
+
+def broadcast_game_over(room, room_id):
+    """Envía mensaje de fin de juego con puntuaciones finales"""
+    # Create final scores list with player info
+    final_scores = []
+    for player in room.players:
+        player_name = player['name']
+        score = room.final_scores.get(player_name, 0)
+        avatar = player.get('avatar', 1)
+        final_scores.append({
+            'name': player_name,
+            'score': score,
+            'avatar': avatar
+        })
+    
+    # Sort by score descending
+    final_scores.sort(key=lambda x: x['score'], reverse=True)
+    
+    message = {
+        'action': 'game_over',
+        'final_scores': final_scores,
+        'room_id': room_id
+    }
+    message_json = json.dumps(message).encode("utf-8")
+
+    for player in room.players:
+        player_name = player['name']
+        if player_name in client_sockets:
+            try:
+                client_sockets[player_name].send(message_json)
+                print(f"[{datetime.now()}] Mensaje game_over enviado a {player_name}")
+            except Exception as e:
+                print(f"[{datetime.now()}] Error enviando game_over a {player_name}: {e}")
+
+
+def fetch_questions(category):
+    questions = api_get(f"/pregunta/{category}") or []
+    if not isinstance(questions, list):
+        return []
+
+    random.shuffle(questions)
+    selected_questions = []
+    for question in questions:
+        question_id = question.get("idPregunta")
+        if question_id is None:
+            continue
+
+        answers = api_get(f"/respuesta/{question_id}") or []
+        if not isinstance(answers, list) or len(answers) == 0:
+            continue
+
+        random.shuffle(answers)
+        selected_questions.append({
+            "idPregunta": question_id,
+            "nomPregunta": question.get("nomPregunta"),
+            "puntuacionPregunta": question.get("puntuacionPregunta", 0),
+            "tipoPregunta": question.get("tipoPregunta", "TEXT"),
+            "answers": [
+                {
+                    "idRespuesta": answer.get("idRespuesta"),
+                    "textRespuesta": answer.get("textRespuesta"),
+                    "rutaRespuesta": answer.get("rutaRespuesta"),
+                    "tipoRespuesta": answer.get("tipoRespuesta"),
+                    "EsCorrecta": bool(answer.get("EsCorrecta", False))
+                }
+                for answer in answers
+            ]
+        })
+
+    return selected_questions
+
 
 def start_room_timer(room, room_id):
     """Inicia un timer de 20 segundos para iniciar el juego automáticamente"""
@@ -204,9 +359,11 @@ def broadcast_game_start(room, room_id):
         return
 
     room.game_started = True
+    room.questions = fetch_questions(room.category)
 
     print(f"[{datetime.now()}] broadcast_game_start() llamado para sala {room_id}")
     print(f"[{datetime.now()}] Jugadores en sala: {len(room.players)}")
+    print(f"[{datetime.now()}] Preguntas cargadas: {len(room.questions)}")
 
     server_time = time.time()
 
@@ -217,7 +374,8 @@ def broadcast_game_start(room, room_id):
         'player_count': room.get_player_count(),
         'category': room.category,
         'server_time': server_time,
-        'countdown': 20
+        'countdown': 20,
+        'questions': room.questions
     }
 
     message_json = json.dumps(game_start_message).encode("utf-8")

@@ -19,27 +19,26 @@ namespace TriviaGame.Views
         int _jugadoresConectados = 0;
         Random _random = new Random();
 
-        private SocketClientService _socketClient = new SocketClientService();
+        private SocketClientService _socketClient;
         private string _roomId;
         private string _category;
         private string _playerName;
         private int _avatarId = 0;
         private bool _socketConnected = false;
         private bool _gameStarting = false;
-        private Func<Task> _onGameStartCallback;
+        private Func<string, Task> _onGameStartCallback;
         private DateTime _tiempoInicio = DateTime.MinValue;
         private double _desviacionReloj = 0;
 
-        public SalaEspera(string categoria = "General", string nombreJugador = "", Func<Task> onGameStart = null)
+        public SalaEspera(string categoria = "General", string nombreJugador = "", Func<string, Task> onGameStart = null, SocketClientService socketClient = null)
         {
             InitializeComponent();
 
             _category = categoria;
             _playerName = string.IsNullOrWhiteSpace(nombreJugador) ? "Jugador" : nombreJugador;
-
             _roomId = $"room_{categoria}";
-
             _onGameStartCallback = onGameStart;
+            _socketClient = socketClient ?? new SocketClientService();
 
             Player1.Visibility = Visibility.Hidden;
             Player2.Visibility = Visibility.Hidden;
@@ -121,7 +120,6 @@ namespace TriviaGame.Views
                 if (await _socketClient.ConnectAsync())
                 {
                     _socketClient.OnMessageReceived += SocketClient_OnMessageReceived;
-                    _socketClient.OnGameStarted += SocketClient_OnGameStarted;
 
                     _avatarId = _random.Next(1, 5);
 
@@ -182,6 +180,19 @@ namespace TriviaGame.Views
                     {
                         ActualizarEstadoSala(message);
                     }
+                    else if (action == "game_start")
+                    {
+                        string questionsJson = null;
+                        if (response.TryGetValue("questions", out var questions))
+                        {
+                            questionsJson = questions.ToString();
+                        }
+
+                        if (!_gameStarting)
+                        {
+                            IniciarJuego(questionsJson);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -190,18 +201,7 @@ namespace TriviaGame.Views
             }
         }
 
-        private void SocketClient_OnGameStarted(object sender, GameStartEventArgs e)
-        {
-            Dispatcher.InvokeAsync(() =>
-            {
-                if (!_gameStarting)
-                {
-                    IniciarJuego();
-                }
-            });
-        }
-
-        private void IniciarJuego()
+        private void IniciarJuego(string questionsJson = null)
         {
             if (_gameStarting) return;
 
@@ -212,7 +212,7 @@ namespace TriviaGame.Views
             {
                 try
                 {
-                    await (_onGameStartCallback?.Invoke() ?? Task.CompletedTask);
+                    await (_onGameStartCallback?.Invoke(questionsJson) ?? Task.CompletedTask);
                 }
                 catch (Exception ex)
                 {

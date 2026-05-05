@@ -25,7 +25,7 @@
                 Height="213" Width="450"
                 Background="{Binding ColorA}"
                 BorderBrush="#FF7AD8D8" FocusVisualStyle="{x:Null}"
-                Command="{Binding ResponderCommand}" CommandParameter="A">
+                Command="{Binding ResponderCommand}" CommandParameter="A" Click="AnswerButton_Click">
             <Button.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="border" BorderBrush="#FF7AD8D9" BorderThickness="1"
@@ -46,7 +46,7 @@
                 Height="213" Width="450"
                 Background="{Binding ColorB}"
                 BorderBrush="#FFF2D17B" FocusVisualStyle="{x:Null}"
-                Command="{Binding ResponderCommand}" CommandParameter="B">
+                Command="{Binding ResponderCommand}" CommandParameter="B" Click="AnswerButton_Click">
             <Button.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="border" BorderBrush="#FFF2D17B" BorderThickness="1"
@@ -67,7 +67,7 @@
                 Height="213" Width="450"
                 Background="{Binding ColorC}"
                 BorderBrush="#FFDE5353" FocusVisualStyle="{x:Null}"
-                Command="{Binding ResponderCommand}" CommandParameter="C">
+                Command="{Binding ResponderCommand}" CommandParameter="C" Click="AnswerButton_Click">
             <Button.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="border" BorderBrush="#FFDE5353" BorderThickness="1"
@@ -88,7 +88,7 @@
                 Height="213" Width="450"
                 Background="{Binding ColorD}"
                 BorderBrush="#FF6CB079" FocusVisualStyle="{x:Null}"
-                Command="{Binding ResponderCommand}" CommandParameter="D">
+                Command="{Binding ResponderCommand}" CommandParameter="D" Click="AnswerButton_Click">
             <Button.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="border" BorderBrush="#FF7AD8D9" BorderThickness="1"

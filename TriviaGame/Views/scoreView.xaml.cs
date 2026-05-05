@@ -29,13 +29,13 @@ namespace TriviaGame.Views
            
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        /*private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             Window ventanaPrincipal = Window.GetWindow(this);
             if (ventanaPrincipal?.DataContext is mainControlViewModel vm)
             {
                 vm.IrAMenu();
             }
-        }
+        }*/
     }
 }

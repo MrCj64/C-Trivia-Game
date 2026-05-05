@@ -19,6 +19,7 @@ namespace TriviaGame.Views
     {
         List<int> _avataresUsados = new List<int>();
         private Action _onMenuClick;
+        private bool _isProcessingMenuClick = false;
 
         public Score(List<(string nombre, int puntos, int avatar)> jugadores = null, Action onMenuClick = null)
         {
@@ -29,6 +30,7 @@ namespace TriviaGame.Views
             {
                 if (jugadores != null && jugadores.Count > 0)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[Score] Mostrando {jugadores.Count} jugadores");
                     var jugadoresOrdenados = jugadores.OrderByDescending(j => j.puntos).ToList();
                     for (int i = 0; i < Math.Min(4, jugadoresOrdenados.Count); i++)
                     {
@@ -42,6 +44,7 @@ namespace TriviaGame.Views
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine("[Score] No hay jugadores, mostrando datos simulados");
                     _avataresUsados.Add(3);
                     _avataresUsados.Add(2);
                     _avataresUsados.Add(7);
@@ -107,15 +110,48 @@ namespace TriviaGame.Views
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine($"Fallo al cargar avatar: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ObtenerPincelAvatar] Fallo al cargar avatar: {ex.Message}");
             }
 
             return pincel;
         }
 
-        private void BtnMenu_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Manejador de click del botón Menu
+        /// Se ejecuta de forma asincrónica para permitir que la UI se actualice
+        /// </summary>
+        private async void BtnMenu_Click(object sender, RoutedEventArgs e)
         {
-            _onMenuClick?.Invoke();
+            // Prevenir múltiples clicks mientras se procesa
+            if (_isProcessingMenuClick)
+            {
+                System.Diagnostics.Debug.WriteLine("[BtnMenu_Click] Ya se está procesando un click, ignorando...");
+                return;
+            }
+
+            _isProcessingMenuClick = true;
+            BtnMenu.IsEnabled = false;
+
+            System.Diagnostics.Debug.WriteLine("[BtnMenu_Click] Click en botón Menu detectado");
+
+            try
+            {
+                // Permitir que la UI se actualice visualmente
+                await Task.Delay(100);
+
+                // Llamar al callback que maneja la desconexión
+                // En mainControlViewModel, este método dispara IrAMenuAsync sin bloquear
+                _onMenuClick?.Invoke();
+
+                System.Diagnostics.Debug.WriteLine("[BtnMenu_Click] Callback de Menu invocado");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[BtnMenu_Click] Error al hacer click en menu: {ex.Message}");
+                // Permitir que el usuario intente de nuevo si algo falla
+                _isProcessingMenuClick = false;
+                BtnMenu.IsEnabled = true;
+            }
         }
     }
 }

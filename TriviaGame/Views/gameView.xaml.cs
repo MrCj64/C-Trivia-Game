@@ -25,15 +25,52 @@ namespace TriviaGame.Views
         public gameView()
         {
             InitializeComponent();
+            Loaded += GameView_Loaded;
+            Unloaded += GameView_Unloaded;
+            DataContextChanged += GameView_DataContextChanged;
+        }
+
+        private void GameView_Loaded(object sender, RoutedEventArgs e)
+        {
             IniciarTemporizador();
+        }
+
+        private void GameView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DetenerTemporizador();
+        }
+
+        private void GameView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsLoaded)
+            {
+                IniciarTemporizador();
+            }
         }
 
         private void IniciarTemporizador()
         {
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(1);
+            DetenerTemporizador();
+            _tiempoRestante = 10;
+            if (Timer != null)
+                Timer.Content = _tiempoRestante.ToString();
+
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
             _timer.Tick += Timer_Tick;
-            _timer.Start(); 
+            _timer.Start();
+        }
+
+        private void DetenerTemporizador()
+        {
+            if (_timer != null)
+            {
+                _timer.Stop();
+                _timer.Tick -= Timer_Tick;
+                _timer = null;
+            }
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -45,13 +82,17 @@ namespace TriviaGame.Views
             }
             else
             {
-                _timer.Stop(); 
+                _timer.Stop();
+                if (DataContext is TriviaGame.ViewModels.IGameQuestion gameQuestion)
+                {
+                    gameQuestion.RevealAnswer();
+                }
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void AnswerButton_Click(object sender, RoutedEventArgs e)
         {
-
+            // No detener el temporizador aquí para que siga corriendo tras la selección.
         }
     }
 }
