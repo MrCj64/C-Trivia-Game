@@ -6,7 +6,10 @@ using System.Text;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
+using System.Text.Json;
 using Newtonsoft.Json;
+using System.Net.WebSockets;
+using System.Windows;
 
 namespace TriviaGame.Services
 {
@@ -14,8 +17,6 @@ namespace TriviaGame.Services
     internal class queryService
     {
         private MySqlService dataAPIconn;
-        private MySqlService dataB;
-        private MySqlConnection conn;
         private readonly HttpClient client;
         private readonly string base_url;
         public queryService()
@@ -23,14 +24,12 @@ namespace TriviaGame.Services
             dataAPIconn = new MySqlService();
             client = dataAPIconn.getClient();
             base_url = dataAPIconn.getBaseUrl();
-            dataB = new MySqlService();
-            conn = dataB.GetConnection();
-            conn.Open();
         }
 
         public async Task<List<Dictionary<string, object>>> GetPreguntas(int idCategoria)
         {
-            try { 
+            try
+            {
                 List<Dictionary<string, object>> listaPreguntas;
                 HttpResponseMessage response = await client.GetAsync($"{base_url}/pregunta/{idCategoria}");
                 response.EnsureSuccessStatusCode();
@@ -39,12 +38,12 @@ namespace TriviaGame.Services
                 listaPreguntas = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(preguntasJson);
                 return listaPreguntas;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return null;
             }
 
-        } 
+        }
 
         public async Task<List<Dictionary<string, object>>> GetRespuestas(int idPregunta)
         {
@@ -98,91 +97,118 @@ namespace TriviaGame.Services
                 return null;
             }
         }
-        public bool insertaJugador(string nombreJugador, string password)
+
+        public async Task<bool> insertaJugador(string nombreJugador, string password)
         {
-            string checkSql = "SELECT COUNT(*) FROM jugador WHERE NombreJugador = @nombreJugador";
-            MySqlCommand checkCmd = new MySqlCommand(checkSql, conn);
-            checkCmd.Parameters.AddWithValue("@nombreJugador", nombreJugador);
-            long existe = (long)checkCmd.ExecuteScalar();
-
-            if (existe > 0)
-                return false;
-
-            string insertSql = @"INSERT INTO jugador (idJugador, nombreJugador, password)
-                                  VALUES (
-                                    (SELECT IFNULL(MAX(j.idJugador), 0) + 1 FROM jugador j),
-                                    @nombreJugador,
-                                    @password
-                                  )";
-            MySqlCommand cmd = new MySqlCommand(insertSql, conn);
-            cmd.Parameters.AddWithValue("@nombreJugador", nombreJugador);
-            cmd.Parameters.AddWithValue("@password", password);
-
-            int filas = cmd.ExecuteNonQuery();
-            return filas > 0;
-        }
-
-        public void insertaPuntuacion(int idJugador, int idCategoria, int puntuacion)
-        {
-            MySqlCommand cmd = new MySqlCommand(
-                @"INSERT INTO puntuacion (IdJugador, IdCategoria, puntuacionTotal) 
-          VALUES (@id, @idCategoria, @puntuacion) 
-          ON DUPLICATE KEY UPDATE puntuacionTotal = puntuacionTotal + @puntuacion", conn);
-            cmd.Parameters.AddWithValue("@id", idJugador);
-            cmd.Parameters.AddWithValue("@idCategoria", idCategoria);
-            cmd.Parameters.AddWithValue("@puntuacion", puntuacion);
-            cmd.ExecuteNonQuery();
-        }
-
-        public bool LoginJugador(string nombreJugador, string password)
-        {
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = conn;
-
-            cmd.CommandText = "SELECT COUNT(*) FROM jugador WHERE nombreJugador=@nombre AND password=@pass";
-
-            cmd.Parameters.AddWithValue("@nombre", nombreJugador);
-            cmd.Parameters.AddWithValue("@pass", password);
-
-            int count = Convert.ToInt32(cmd.ExecuteScalar());
-
-            return count > 0;
-        }
-
-
-        public int GetIdJugador(string nombreJugador)
-        {
-            MySqlCommand cmd = new MySqlCommand(
-                "SELECT idJugador FROM jugador WHERE nombreJugador = @nombre", conn);
-            cmd.Parameters.AddWithValue("@nombre", nombreJugador);
-            object result = cmd.ExecuteScalar();
-            return result != null ? Convert.ToInt32(result) : -1;
-        }
-
-        public List<Dictionary<string, object>> GetPuntuaciones()
-        {
-            List<Dictionary<string, object>> lista = new List<Dictionary<string, object>>();
-            MySqlCommand cmd = new MySqlCommand(
-                @"SELECT j.nombreJugador, c.NombreCategoria, p.puntuacionTotal
-          FROM puntuacion p
-          INNER JOIN jugador j ON j.idJugador = p.IdJugador
-          INNER JOIN categoria c ON c.idCategoria = p.IdCategoria
-          ORDER BY p.puntuacionTotal DESC", conn);
-
-            MySqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                lista.Add(new Dictionary<string, object>
-        {
-            { "nombreJugador",   reader.GetString("nombreJugador")   },
-            { "NombreCategoria", reader.GetString("NombreCategoria") },
-            { "puntuacionTotal", reader.GetInt32("puntuacionTotal")  }
-        });
+                string checkSQL;
+                string insercionJugador;
+                var parametros = new
+                {
+                    nombreJugador = nombreJugador,
+                    password = password
+                };
+
+                string jsonString = JsonConvert.SerializeObject(parametros);
+                var httpContent = new StringContent(jsonString.ToString(), Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.GetAsync($"{base_url}/jugador/existe?nombreJugador={nombreJugador}");
+                response.EnsureSuccessStatusCode();
+                checkSQL = await response.Content.ReadAsStringAsync();
+                if (int.Parse(checkSQL) > 0) return false; ;
+
+
+                response = await client.PostAsync($"{base_url}/jugador", httpContent);
+                string insertJugador = await response.Content.ReadAsStringAsync();
+                return response.IsSuccessStatusCode;
             }
-            reader.Close();
-            return lista;
+            catch (Exception e)
+            {
+                return false;
+            }
         }
 
-    }
+        public async Task insertaPuntuacion(int idJugador, int idCategoria, int puntuacion)
+        {
 
+            var nuevaPuntuacion = new
+            {
+                IdJugador = idJugador,
+                idCategoria = idCategoria,
+                puntuacionTotal = puntuacion
+            };
+
+            try
+            {
+                string json = JsonConvert.SerializeObject(nuevaPuntuacion);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync($"{base_url}/puntuacion", content);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("e");
+            }
+
+
+        }
+
+        public async Task<bool> LoginJugador(string nombreJugador, string password)
+        {
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync(
+                    $"{base_url}/jugador/login?nombreJugador={nombreJugador}&password={password}"
+                );
+                response.EnsureSuccessStatusCode();
+                string respuestaJson = await response.Content.ReadAsStringAsync();
+
+                // ← deserializa el JSON correctamente
+                var resultado = JsonConvert.DeserializeObject<Dictionary<string, object>>(respuestaJson);
+                return Convert.ToBoolean(resultado["existe"]);
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<int> GetIdJugador(string nombreJugador)
+        {
+            try
+            {
+                int idJugador;
+                HttpResponseMessage response = await client.GetAsync($"{base_url}/jugador/buscar?nombreJugador={nombreJugador}");
+                response.EnsureSuccessStatusCode();
+                string jugadorId = await response.Content.ReadAsStringAsync();
+
+                idJugador = JsonConvert.DeserializeObject<int>(jugadorId);
+                return idJugador;
+            }
+            catch (Exception e)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<List<Dictionary<string, object>>> GetPuntuaciones()
+        {
+            try
+            {
+                List<Dictionary<string, object>> listaPuntuaciones;
+                HttpResponseMessage response = await client.GetAsync($"{base_url}/puntuacion/ranking");
+                response.EnsureSuccessStatusCode();
+                string puntuacionesJSon = await response.Content.ReadAsStringAsync();
+
+                listaPuntuaciones = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(puntuacionesJSon);
+                return listaPuntuaciones;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+    }
 }

@@ -21,9 +21,9 @@ namespace TriviaGame.ViewModels
             CargarPuntuaciones();
         }
 
-        private void CargarPuntuaciones()
+        private async void CargarPuntuaciones()
         {
-            var datos = queryService.GetPuntuaciones();
+            var datos = await queryService.GetPuntuaciones();
             Puntuaciones.Clear();
             foreach (var d in datos)
             {
@@ -31,8 +31,8 @@ namespace TriviaGame.ViewModels
                 {
                     Jugador = d["nombreJugador"].ToString(),
                     Categoria = d["NombreCategoria"].ToString(),
-                    Puntuacion = (int)d["puntuacionTotal"],
-                    Aciertos = (int)d["puntuacionTotal"] / 10
+                    Puntuacion = Convert.ToInt32(d["puntuacionTotal"]),
+                    Aciertos = Convert.ToInt32(d["puntuacionTotal"]) / 10
                 });
             }
         }
