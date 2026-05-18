@@ -6,6 +6,7 @@ using TriviaGame.Views;
 using System.Linq;
 using TriviaGame.Services;
 using TriviaGame.Models;
+using System.Windows;
 
 namespace TriviaGame.ViewModels
 {
@@ -203,7 +204,8 @@ namespace TriviaGame.ViewModels
             if (index >= preguntas.Count)
             {
                 _ = _socketClient.SendGameFinishedAsync(puntuacionTotal, preguntas[0].categoryId);
-                CurrentView = new Score(new List<(string, int, int)> { (jugadorActual, puntuacionTotal, 1) }, IrAMenuSync);
+                System.Diagnostics.Debug.WriteLine($"[MostrarPregunta] Juego terminado, puntaje={puntuacionTotal}. Esperando game_over del servidor...");
+                CurrentView = new EsperandoResultados();
                 return;
             }
 
@@ -292,7 +294,11 @@ namespace TriviaGame.ViewModels
         {
             System.Diagnostics.Debug.WriteLine($"[OnGameOverReceived] Mostrar Score con {e.FinalScores.Count} jugadores");
 
-            CurrentView = new Score(e.FinalScores, IrAMenuSync);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                System.Diagnostics.Debug.WriteLine("[OnGameOverReceived] Mostrando Score en hilo UI");
+                CurrentView = new Score(e.FinalScores, IrAMenuSync);
+            });
         }
     }
 }

@@ -17,7 +17,6 @@ namespace TriviaGame.Views
 {
     public partial class Score : UserControl
     {
-        List<int> _avataresUsados = new List<int>();
         private Action _onMenuClick;
         private bool _isProcessingMenuClick = false;
 
@@ -28,37 +27,31 @@ namespace TriviaGame.Views
 
             Loaded += (s, e) =>
             {
+                Player1.Visibility = Visibility.Collapsed;
+                Player2.Visibility = Visibility.Collapsed;
+                Player3.Visibility = Visibility.Collapsed;
+
                 if (jugadores != null && jugadores.Count > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[Score] Mostrando {jugadores.Count} jugadores");
-                    var jugadoresOrdenados = jugadores.OrderByDescending(j => j.puntos).ToList();
-                    for (int i = 0; i < Math.Min(4, jugadoresOrdenados.Count); i++)
+                    System.Diagnostics.Debug.WriteLine($"[Score] Mostrando {jugadores.Count} jugadores reales");
+                    var top3 = jugadores
+                        .OrderByDescending(j => j.puntos)
+                        .Take(3)
+                        .ToList();
+                    for (int i = 0; i < top3.Count; i++)
                     {
-                        lugares(i, jugadoresOrdenados[i].nombre, jugadoresOrdenados[i].puntos);
-                        ImageBrush pincelListo = ObtenerPincelAvatar(jugadoresOrdenados[i].avatar);
-                        var avatar = (System.Windows.Shapes.Shape)this.FindName($"Avatar{i + 1}");
-                        if (avatar != null)
-                            avatar.Fill = pincelListo;
-                        _avataresUsados.Add(jugadoresOrdenados[i].avatar);
+                        lugares(i, top3[i].nombre, top3[i].puntos);
+
+                        ImageBrush pincel = ObtenerPincelAvatar(top3[i].avatar);
+                        var avatarShape = (System.Windows.Shapes.Shape)this.FindName($"Avatar{i + 1}");
+                        if (avatarShape != null)
+                            avatarShape.Fill = pincel;
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[Score] No hay jugadores, mostrando datos simulados");
-                    _avataresUsados.Add(3);
-                    _avataresUsados.Add(2);
-                    _avataresUsados.Add(7);
-                    _avataresUsados.Add(5);
-
-                    string[] _nombresSimulados = { "", "Ciber_Dev", "SQL_Master", "MichiLover", "Pro_Gamer" };
-                    for (int i = 0; i < 4; i++)
-                    {
-                        lugares(i, _nombresSimulados[i], 100 - (i * 10));
-                        ImageBrush pincelListo = ObtenerPincelAvatar(_avataresUsados[i]);
-                        var avatar = (System.Windows.Shapes.Shape)this.FindName($"Avatar{i + 1}");
-                        if (avatar != null)
-                            avatar.Fill = pincelListo;
-                    }
+                    // Si llegamos aquí sin datos, algo salió mal — loguear para debug
+                    System.Diagnostics.Debug.WriteLine("[Score] ADVERTENCIA: jugadores es null o vacío. Revisar OnGameOverReceived.");
                 }
             };
         }
@@ -122,33 +115,19 @@ namespace TriviaGame.Views
         /// </summary>
         private async void BtnMenu_Click(object sender, RoutedEventArgs e)
         {
-            // Prevenir múltiples clicks mientras se procesa
-            if (_isProcessingMenuClick)
-            {
-                System.Diagnostics.Debug.WriteLine("[BtnMenu_Click] Ya se está procesando un click, ignorando...");
-                return;
-            }
+            if (_isProcessingMenuClick) return;
 
             _isProcessingMenuClick = true;
             BtnMenu.IsEnabled = false;
 
-            System.Diagnostics.Debug.WriteLine("[BtnMenu_Click] Click en botón Menu detectado");
-
             try
             {
-                // Permitir que la UI se actualice visualmente
                 await Task.Delay(100);
-
-                // Llamar al callback que maneja la desconexión
-                // En mainControlViewModel, este método dispara IrAMenuAsync sin bloquear
                 _onMenuClick?.Invoke();
-
-                System.Diagnostics.Debug.WriteLine("[BtnMenu_Click] Callback de Menu invocado");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[BtnMenu_Click] Error al hacer click en menu: {ex.Message}");
-                // Permitir que el usuario intente de nuevo si algo falla
+                System.Diagnostics.Debug.WriteLine($"[BtnMenu_Click] Error: {ex.Message}");
                 _isProcessingMenuClick = false;
                 BtnMenu.IsEnabled = true;
             }

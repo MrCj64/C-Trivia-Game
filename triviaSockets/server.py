@@ -7,7 +7,7 @@ import random
 from datetime import datetime
 import time
 
-BASE_API_URL = "http://10.103.158.219:8000"
+BASE_API_URL = "http://192.168.100.28:8000"
 
 salas = {}
 salas_lock = threading.Lock()
@@ -18,7 +18,7 @@ class Room:
         self.room_id = room_id
         self.category = category
         self.players = []
-        self.max_players = 4
+        self.max_players = 5
         self.created_at = datetime.now()
         self.timer_start = time.time()
         self.is_active = True
@@ -55,20 +55,29 @@ class Room:
 def get_or_create_player(player_name):
     jugadores = api_get("/jugador") or []
     
+    # FIX: campo correcto es "nombreJugador" no "nomJugador"
     for j in jugadores:
-        if j.get("nomJugador", "").strip() == player_name.strip():
-            print(f"[{datetime.now()}] Jugador validado en la API: {j}")
+        if j.get("nombreJugador", "").strip() == player_name.strip():
             return j
-            
-    nuevo_jugador = {"nomJugador": player_name}
+    
+    # FIX: la API requiere "nombreJugador" y "password"
+    nuevo_jugador = {"nombreJugador": player_name, "password": ""}
     try:
         json_data = json.dumps(nuevo_jugador).encode("utf-8")
-        req = urllib.request.Request(f"{BASE_API_URL}/jugador", data=json_data, headers={'Content-Type': 'application/json'})
+        req = urllib.request.Request(
+            f"{BASE_API_URL}/jugador",
+            data=json_data,
+            headers={'Content-Type': 'application/json'}
+        )
         with urllib.request.urlopen(req, timeout=5) as response:
             if response.status == 200:
                 creado = json.loads(response.read().decode("utf-8"))
                 print(f"[{datetime.now()}] Nuevo jugador registrado: {creado}")
-                return creado
+                # La API devuelve el lastrowid, no el objeto completo.
+                # Necesitamos buscarlo para obtener el idJugador real.
+                jugador_nuevo = api_get(f"/jugador/buscar?nombreJugador={player_name}")
+                if jugador_nuevo:
+                    return {"idJugador": jugador_nuevo["idJugador"], "nombreJugador": player_name}
     except Exception as e:
         print(f"[{datetime.now()}] Error al registrar jugador: {e}")
     return None
@@ -93,29 +102,17 @@ def handle_client(client_socket, addr):
                 player_name = request_data.get("player_name", "").strip()
                 avatar_id = request_data.get("avatar", 0)
                 
-                # Leemos el player_id enviado desde C#
                 player_id = request_data.get("player_id", 0)
+                
+                player_data = get_or_create_player(player_name)
 
-                if not player_name:
-                    response = {
-                        'status': 'error',
-                        'message': 'Nombre de jugador vacío o inválido'
-                    }
+                if not player_data:
+                    response = {'status': 'error','message':'Error validando jugador'}
                     client_socket.send(json.dumps(response).encode("utf-8"))
                     continue
 
-                # Si no se pasó un player_id desde el cliente, consultamos la API (como respaldo)
-                if player_id == 0:
-                    player_data = get_or_create_player(player_name)
-                    if not player_data:
-                        response = {
-                            'status': 'error',
-                            'message': 'Error al conectar con la API para validar/registrar al usuario'
-                        }
-                        client_socket.send(json.dumps(response).encode("utf-8"))
-                        continue
-
-                    player_id = player_data.get("idJugador") or player_data.get("id") or 0
+                player_id = player_data.get("idJugador") or 0   
+                
 
                 print(f"[{datetime.now()}] Solicitud join_room: player='{player_name}', ID={player_id}, category='{category}', avatar={avatar_id}")
 
@@ -313,7 +310,7 @@ def broadcast_game_start(room, room_id):
             except Exception: pass
 
 def run_server():
-    server_ip = "10.103.158.217"
+    server_ip = "192.168.100.28"
     port = 50000
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

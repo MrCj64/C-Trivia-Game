@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine, MetaData
 
 user = "root"
-password = "123"
+password = "2005"
 host = "127.0.0.1"
 port  = 3306
-database = "tiviagamebd"
+database = "trivia_game_db"
 
 engine = create_engine(
         f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}", echo =True

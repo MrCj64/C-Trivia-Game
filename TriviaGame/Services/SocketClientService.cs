@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -15,7 +14,6 @@ namespace TriviaGame.Services
         private NetworkStream _stream;
         private readonly string _serverIp;
         private readonly int _serverPort;
-        private readonly HttpClient _httpClient;
         private bool _isConnected = false;
         private CancellationTokenSource _cancellationTokenSource;
         private Task _listenerTask;
@@ -27,13 +25,12 @@ namespace TriviaGame.Services
         public event EventHandler<GameStartEventArgs> OnGameStarted;
         public event EventHandler<GameOverEventArgs> OnGameOver;
 
-        public SocketClientService(string serverIp = "10.103.151.13", int serverPort = 50000, string apiBaseUrl = "http://10.103.151.13:8000")
+        public SocketClientService(string serverIp = "192.168.100.28", int serverPort = 50000)
         {
             _serverIp = serverIp;
             _serverPort = serverPort;
             _client = new TcpClient();
             _cancellationTokenSource = new CancellationTokenSource();
-            _httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
         }
 
         public async Task<bool> ConnectAsync()
@@ -73,45 +70,6 @@ namespace TriviaGame.Services
                 _client?.Dispose();
                 _client = new TcpClient();
                 OnConnectionStatusChanged?.Invoke(this, $"Error al conectar: {ex.Message}");
-                return false;
-            }
-        }
-
-        public async Task<bool> ValidateOrRegisterUserAsync(string playerName)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync("/jugador");
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonString = await response.Content.ReadAsStringAsync();
-                    var jugadores = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonString);
-
-                    if (jugadores != null)
-                    {
-                        foreach (var j in jugadores)
-                        {
-                            if (j.TryGetValue("nomJugador", out var val) && val?.ToString()?.ToLower() == playerName.ToLower())
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                var payload = new { nomJugador = playerName };
-                var content = new StringContent(
-                    JsonSerializer.Serialize(payload),
-                    Encoding.UTF8,
-                    "application/json"
-                );
-
-                var postResponse = await _httpClient.PostAsync("/jugador", content);
-                return postResponse.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error de conexión con la API: {ex.Message}");
                 return false;
             }
         }
@@ -179,62 +137,7 @@ namespace TriviaGame.Services
             }
         }
 
-        public async Task<int> ValidateAndGetUserIdAsync(string playerName)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync("/jugador");
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonString = await response.Content.ReadAsStringAsync();
-                    var jugadores = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonString);
-
-                    if (jugadores != null)
-                    {
-                        foreach (var j in jugadores)
-                        {
-                            if (j.TryGetValue("nomJugador", out var val) && val?.ToString()?.ToLower() == playerName.ToLower())
-                            {
-                                if (j.TryGetValue("idJugador", out var idVal) && idVal != null)
-                                    return Convert.ToInt32(idVal);
-                                if (j.TryGetValue("id", out var idVal2) && idVal2 != null)
-                                    return Convert.ToInt32(idVal2);
-                            }
-                        }
-                    }
-                }
-
-                var payload = new { nomJugador = playerName };
-                var content = new StringContent(
-                    JsonSerializer.Serialize(payload),
-                    Encoding.UTF8,
-                    "application/json"
-                );
-
-                var postResponse = await _httpClient.PostAsync("/jugador", content);
-                if (postResponse.IsSuccessStatusCode)
-                {
-                    var jsonString = await postResponse.Content.ReadAsStringAsync();
-                    var created = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
-                    if (created != null)
-                    {
-                        if (created.TryGetValue("idJugador", out var idVal) && idVal != null)
-                            return Convert.ToInt32(idVal);
-                        if (created.TryGetValue("id", out var idVal2) && idVal2 != null)
-                            return Convert.ToInt32(idVal2);
-                    }
-                }
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error de conexión con la API: {ex.Message}");
-                return 0;
-            }
-        }
-
-        // Modifica la firma de tu método JoinRoomAsync para incluir el parámetro del ID
-        public async Task<string> JoinRoomAsync(string roomId, string category, string playerName, int avatarId, int playerId = 0)
+        public async Task<string> JoinRoomAsync(string roomId, string category, string playerName, int avatarId)
         {
             if (!_isConnected || _stream == null)
             {
@@ -245,7 +148,7 @@ namespace TriviaGame.Services
 
             try
             {
-                var request = new { action = "join_room", room_id = roomId, category = category, player_name = playerName, avatar = avatarId, player_id = playerId };
+                var request = new { action = "join_room", room_id = roomId, category = category, player_name = playerName, avatar = avatarId };
                 string jsonRequest = JsonSerializer.Serialize(request);
                 byte[] data = Encoding.UTF8.GetBytes(jsonRequest);
                 await _stream.WriteAsync(data, 0, data.Length);
@@ -361,7 +264,6 @@ namespace TriviaGame.Services
                     _client = null;
                 }
 
-                _httpClient?.Dispose();
                 OnConnectionStatusChanged?.Invoke(this, "Desconectado del servidor");
                 return true;
             }

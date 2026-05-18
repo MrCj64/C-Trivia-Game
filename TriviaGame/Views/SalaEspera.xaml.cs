@@ -15,7 +15,7 @@ namespace TriviaGame.Views
     public partial class SalaEspera : UserControl
     {
         DispatcherTimer _timer;
-        int _tiempoRestante = 20;
+        int _tiempoRestante = 30;
         int _jugadoresConectados = 0;
         Random _random = new Random();
 
